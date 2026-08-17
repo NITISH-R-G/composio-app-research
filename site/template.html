@@ -83,6 +83,19 @@
   .bar-fill { height: 100%; border-radius: 5px; background: var(--accent); }
   .bar-val { width: 34px; text-align: right; color: var(--text); font-weight: 700; font-family: ui-monospace, monospace; font-size: 12px; }
 
+  /* ===== Caught-errors band ===== */
+  .caught {
+    background: var(--surface); border: 1px solid color-mix(in srgb, var(--warn) 38%, var(--border));
+    border-radius: 12px; padding: 24px; margin-bottom: 22px;
+  }
+  .caught-head h3 { font-size: 19px; margin: 10px 0 8px; }
+  .caught-head p { color: var(--muted); font-size: 13.5px; margin: 0; max-width: 78ch; }
+  .caught-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); gap: 12px; margin-top: 18px; }
+  .caught-card { background: var(--warn-soft); border: 1px solid color-mix(in srgb, var(--warn) 25%, transparent); border-radius: 10px; padding: 14px; }
+  .caught-card .ca { font-weight: 800; font-size: 13.5px; margin-bottom: 3px; }
+  .caught-card .cf { font-family: ui-monospace, monospace; font-size: 11px; color: var(--warn); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+  .caught-card p { font-size: 12.5px; color: var(--muted); margin: 7px 0 0; }
+
   /* ===== Pills ===== */
   .pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 700; white-space: nowrap; }
   .pill-good { background: var(--good-soft); color: var(--good); }
@@ -158,14 +171,15 @@
   <div class="wrap">
     <div class="eyebrow">Composio Research &middot; Feasibility Audit</div>
     <h1>Can we build an agent toolkit for these 100 apps today?</h1>
-    <p class="sub">A researched, cited, and independently verified answer for every app: auth model, self-serve
-      vs. gated access, API breadth, MCP availability, and what actually blocks buildability. Produced by a
-      10-agent research pipeline, not by hand &mdash; then fact-checked against a second, independent pass.</p>
+    <p class="sub">A researched and cited answer for every app: auth model, self-serve vs. gated access, API
+      breadth, MCP availability, and what actually blocks buildability. Produced by a 10-agent research
+      pipeline, not by hand &mdash; then independently re-researched by a blind second pass that caught
+      __VERIFY_PARTIAL__ stale claims the first pass shipped.</p>
     <div class="meta-row">
       <span><b>100</b> apps researched</span>
       <span><b>10</b> categories</span>
-      <span><b>10</b> parallel research agents + 1 verification agent</span>
-      <span><b>__VERIFY_ACCURACY__%</b> field-level accuracy after verification (up from __VERIFY_FIRST__%)</span>
+      <span><b>10</b> parallel research agents + 1 re-research agent</span>
+      <span><b>__VERIFY_FIRST__% &rarr; 100%</b> after correction, on a 72-field independent audit</span>
     </div>
   </div>
 </header>
@@ -192,6 +206,24 @@
 
     <div class="kpis" style="margin-bottom:22px;">
       __KPI_TILES__
+    </div>
+
+    <div class="caught">
+      <div class="caught-head">
+        <div>
+          <div class="eyebrow" style="color:var(--warn);">The agent was wrong __VERIFY_PARTIAL__ times &mdash; here they are</div>
+          <h3>What the verification loop actually caught</h3>
+          <p>A blind second pass re-researched 18 of the 100 apps from scratch. __VERIFY_CONFIRMED__ came back clean;
+            these __VERIFY_PARTIAL__ had a stale or overstated field &mdash; never a fabricated verdict. Every one is
+            corrected in the dataset below. Note the shape of the errors: 2 are <span class="mono">mcp_exists</span>
+            (the most volatile field here &mdash; vendors ship official MCP servers monthly) and 2 are
+            <span class="mono">self_serve</span> gating that's stated one way in the docs and enforced another way
+            in practice. Those two fields are where an agent researching this problem will keep being wrong.</p>
+        </div>
+      </div>
+      <div class="caught-grid">
+        __CAUGHT_ERRORS__
+      </div>
     </div>
 
     <div class="patterns">
@@ -289,9 +321,10 @@
   <div class="wrap">
     <div class="section-head">
       <div>
-        <h2>Verification: how we know the findings are trustworthy</h2>
+        <h2>Verification: what was actually checked, and how</h2>
         <p>An independent agent, blind to the first pass's reasoning, re-researched 18 of the 100 apps from
-          scratch and diffed the answers field-by-field. Corrections were then merged back into the dataset.</p>
+          scratch and diffed the answers field-by-field across 4 fields &mdash; 72 field-checks in total.
+          Corrections were then merged back into the dataset.</p>
       </div>
     </div>
 
@@ -306,13 +339,17 @@
           <span class="mono">data/results.json</span>.
         </p>
         <div class="accuracy-flow">
-          <div class="step"><div class="v">__VERIFY_FIRST__%</div><div class="l">First-pass field accuracy</div></div>
+          <div class="step"><div class="v">__VERIFY_FIRST__%</div><div class="l">First-pass, 72 audited fields</div></div>
           <div class="arrow">&rarr;</div>
           <div class="step"><div class="v" style="color:var(--good)">100%</div><div class="l">After corrections merged</div></div>
         </div>
         <p style="color:var(--muted-2); font-size:12px; margin-top:14px;">
-          Accuracy measured across 4 checked fields (auth method, self-serve status, MCP existence, buildability
-          verdict) &times; 18 sampled apps = 72 field-checks total.
+          <b>Scope, stated precisely:</b> this measures 4 fields (auth method, self-serve status, MCP existence,
+          buildability verdict) across an 18-app sample &mdash; 72 field-checks. It is <i>not</i> a claim that all
+          100 records are verified; the other 82 apps carry only their first-pass confidence rating. The second
+          pass re-researched each app independently rather than hand-checking every claim against first-party
+          docs, so some corrections rest on credible secondary sources &mdash; each one is linked in the
+          verification log.
         </p>
       </div>
       <div class="verify-list" id="verifylist">
@@ -351,8 +388,11 @@
       <a href="https://github.com/NITISH-R-G/composio-app-research/blob/master/agent/research.py" target="_blank" rel="noopener">agent/research.py &rarr;</a>
     </div>
     <p class="fnote">Built for the Composio primary-filter assignment. Research executed as 10 parallel Claude
-      Code subagents with real web search against live developer docs, then independently re-verified by an
-      11th agent; see the README for how to re-run the same pipeline directly against the Anthropic API.</p>
+      Code subagents with real web search against live developer docs, then independently re-researched by an
+      11th agent on an 18-app sample; see the README for how to re-run the same pipeline directly against the
+      Anthropic API. The reusable pipeline is structured LLM research + web search with a strict cited-JSON
+      schema; a Composio API key is optional and used only to cross-check apps against Composio's own toolkit
+      registry.</p>
   </div>
 </footer>
 

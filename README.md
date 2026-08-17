@@ -76,8 +76,18 @@ an agreement rate — this is the accuracy loop, not a single trusted pass.
   than guessing (MrScraper, Waterfall.io, higgsfield, Sherlock's MCP status,
   fanbasis, Paygent Connect). These are the apps that "defeated" straightforward
   research and need direct outreach.
-- The independent verification pass (18 apps) found the agent's `buildability_verdict`
-  and `self_serve` classification reliable, with the main error mode being
-  `mcp_exists` drifting between "official" and "community-only" — see
-  `data/verification.json` and the case-study page's verification section for
-  the exact hit/miss breakdown.
+- **What the accuracy number does and does not claim.** The independent pass covers
+  18 of 100 apps × 4 fields = **72 field-checks**. 13 of 18 records came back clean;
+  5 had exactly one stale or overstated field each → **93% first-pass accuracy, 100%
+  after those 5 corrections were merged**. This is *not* a claim that all 100 records
+  are verified — the other 82 carry only their first-pass confidence rating.
+- **How the second pass verified.** It independently *re-researched* each sampled app
+  rather than hand-checking every claim against first-party documentation, so some
+  corrections rest on credible secondary sources (each linked in
+  `data/verification.json`). The loop is: first research → blind independent
+  re-research → field-by-field diff → correction → final dataset.
+- **The error shape is the interesting part.** Of the 5 corrections, 2 were
+  `mcp_exists` (Zendesk, Harvest — both "no official MCP" claims that were already
+  stale) and 2 were `self_serve` (Ahrefs, Ramp — gating stated one way in docs and
+  enforced another way in practice). Those two fields are where an agent researching
+  this problem will keep being wrong, which is the argument for the loop existing.

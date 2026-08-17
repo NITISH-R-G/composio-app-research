@@ -123,6 +123,14 @@ const verifyItems = verification.map(v => {
   </div>`;
 }).join('');
 
+// ---- Caught errors (surfaced up top, not buried) ----
+const caughtErrors = verification.filter(v => v.verdict !== 'CONFIRMED').map(v => `
+  <div class="caught-card">
+    <div class="ca">${esc(v.app)}</div>
+    <div class="cf">${esc(v.field || 'field correction')}</div>
+    <p>${esc(v.correction || v.notes)}</p>
+  </div>`).join('');
+
 // ---- Honesty / low confidence rows ----
 const lowConf = results.filter(r => r.confidence === 'low');
 const lowConfRows = lowConf.map(r => `
@@ -139,8 +147,9 @@ tpl = tpl
   .replace('__APPS_JSON__', appsJson)
   .replace(/__VERIFY_ACCURACY__/g, '100')
   .replace(/__VERIFY_FIRST__/g, String(firstPassPct))
-  .replace('__VERIFY_CONFIRMED__', String(confirmed))
-  .replace('__VERIFY_PARTIAL__', String(partial))
+  .replace(/__VERIFY_CONFIRMED__/g, String(confirmed))
+  .replace(/__VERIFY_PARTIAL__/g, String(partial))
+  .replace('__CAUGHT_ERRORS__', caughtErrors)
   .replace('__VERIFY_ITEMS__', verifyItems)
   .replace('__LOWCONF_ROWS__', lowConfRows);
 
