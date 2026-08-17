@@ -7,9 +7,15 @@ verification pass over a sample.
 Applied here to 100 apps across 10 categories: for each one, can Composio build an
 agent toolkit today, and if not, what's actually stopping it.
 
-- **Live memo:** the published case study (link in the submission)
-- **Dataset:** [`data/results.json`](data/results.json), 100 records
+100 apps, 90 buildable in some form, 56 shippable today, 18 independently
+re-researched, 5 corrections. Credential access, not API existence, is the
+largest practical constraint.
+
+- **Live case study:** https://claude.ai/code/artifact/9d441301-2558-40c0-ad50-79a807fdec45
+- **Repository:** https://github.com/NITISH-R-G/composio-app-research
+- **Research agent:** [`agent/research.py`](agent/research.py)
 - **Verification log:** [`data/verification.json`](data/verification.json), 18-app audit
+- **Dataset:** [`data/results.json`](data/results.json), 100 records
 
 ---
 
@@ -100,8 +106,8 @@ python agent/research.py --input data/apps.json --output data/results.json --lim
 # full run
 python agent/research.py --input data/apps.json --output data/results.json
 
-# independent verification pass
-python agent/verify.py --input data/results.json --sample 20 --output data/verification.json
+# independent verification pass (18 apps, the sample used for this submission)
+python agent/verify.py --input data/results.json --sample 18 --seed 42 --output data/verification.json
 
 # rebuild the memo from the dataset
 node site/build.js
@@ -158,6 +164,24 @@ Ramp is the clearest case: the worker found the API documentation correctly but
 read "API exists" as "credentials are obtainable." Those are separate fields for
 that reason. Ahrefs is a different failure mode: pricing and access tiers move,
 so a confident number can go stale within months.
+
+---
+
+## Build-order tiers
+
+Computed in [`site/build.js`](site/build.js) from `results.json`, not assigned by hand.
+
+| Tier | Rule | Apps |
+|---|---|---|
+| P0: Build first | `buildable today` + free self-serve + MCP exists + not low confidence | 29 |
+| P1: Fast follow | `buildable today`, not low confidence, not already P0 | 27 |
+| P2: Build on demand | `buildable with limitation`, not low confidence | 30 |
+| P3: Customer-led only | `blocked`, not low confidence | 8 |
+| P4: Human validation first | `confidence: low` | 6 |
+
+This ranks integration difficulty, not product priority. Customer demand,
+revenue, and strategic value aren't in the dataset and would sit on top of this
+before it becomes an actual roadmap.
 
 ---
 
