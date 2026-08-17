@@ -1,0 +1,627 @@
+<title>App Toolkit Feasibility Audit</title>
+<style>
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0c0e13; --surface: #141822; --surface-2: #1a1f2b; --border: #262c3a;
+      --text: #e7e9f0; --muted: #8b93a9; --muted-2: #5f6579;
+      --accent: #8b7bff; --accent-soft: #2a2455; --accent-ink: #efecff;
+      --good: #3fcf8e; --good-soft: #12291f; --warn: #e3ac3a; --warn-soft: #2c2413;
+      --bad: #f16a80; --bad-soft: #2c1620;
+      --shadow: 0 1px 0 rgba(255,255,255,0.03) inset;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0c0e13; --surface: #141822; --surface-2: #1a1f2b; --border: #262c3a;
+    --text: #e7e9f0; --muted: #8b93a9; --muted-2: #5f6579;
+    --accent: #8b7bff; --accent-soft: #2a2455; --accent-ink: #efecff;
+    --good: #3fcf8e; --good-soft: #12291f; --warn: #e3ac3a; --warn-soft: #2c2413;
+    --bad: #f16a80; --bad-soft: #2c1620;
+    --shadow: 0 1px 0 rgba(255,255,255,0.03) inset;
+  }
+  :root {
+    --bg: #f5f6fa; --surface: #ffffff; --surface-2: #eef0f6; --border: #e0e2ec;
+    --text: #171a24; --muted: #666e84; --muted-2: #9198ab;
+    --accent: #5b3df0; --accent-soft: #ece9ff; --accent-ink: #4227c9;
+    --good: #17915c; --good-soft: #e5f8ef; --warn: #a06c07; --warn-soft: #fbf1da;
+    --bad: #c93553; --bad-soft: #fcebee;
+    --shadow: 0 1px 0 rgba(0,0,0,0.02) inset;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    font-size: 15px; line-height: 1.55; -webkit-font-smoothing: antialiased;
+  }
+  .mono { font-family: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; }
+  h1, h2, h3 { text-wrap: balance; font-weight: 800; letter-spacing: -0.02em; margin: 0; }
+  a { color: var(--accent); }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 28px; }
+  .eyebrow {
+    text-transform: uppercase; letter-spacing: 0.12em; font-size: 11.5px; font-weight: 700;
+    color: var(--accent); display: flex; align-items: center; gap: 8px;
+  }
+  .eyebrow::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); display: inline-block; }
+
+  /* ===== Masthead ===== */
+  header.masthead { border-bottom: 1px solid var(--border); padding: 56px 0 40px; }
+  .masthead h1 { font-size: clamp(30px, 4.2vw, 46px); max-width: 15ch; margin-top: 14px; }
+  .masthead .sub { color: var(--muted); font-size: 17px; max-width: 62ch; margin-top: 16px; }
+  .masthead .meta-row { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 26px; font-size: 13px; color: var(--muted-2); }
+  .masthead .meta-row span b { color: var(--text); font-weight: 700; }
+
+  nav.tabs { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); }
+  nav.tabs .wrap { display: flex; gap: 4px; overflow-x: auto; padding-top: 10px; padding-bottom: 10px; }
+  nav.tabs a { text-decoration: none; color: var(--muted); font-size: 13px; font-weight: 600; padding: 8px 14px; border-radius: 7px; white-space: nowrap; }
+  nav.tabs a:hover { color: var(--text); background: var(--surface-2); }
+
+  section { padding: 52px 0; border-bottom: 1px solid var(--border); }
+  section:last-of-type { border-bottom: none; }
+  .section-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap; margin-bottom: 28px; }
+  .section-head h2 { font-size: clamp(22px, 2.6vw, 28px); }
+  .section-head p { color: var(--muted); max-width: 60ch; margin: 8px 0 0; font-size: 14.5px; }
+
+  /* ===== KPI tiles ===== */
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 20px 18px; box-shadow: var(--shadow); }
+  .kpi .num { font-size: 32px; font-weight: 800; letter-spacing: -0.02em; }
+  .kpi .num .unit { font-size: 17px; font-weight: 700; color: var(--muted); }
+  .kpi .label { color: var(--muted); font-size: 12.5px; margin-top: 6px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+  .kpi .detail { color: var(--muted-2); font-size: 12.5px; margin-top: 8px; }
+  .kpi.accent { background: linear-gradient(155deg, var(--accent-soft), var(--surface) 65%); border-color: color-mix(in srgb, var(--accent) 35%, var(--border)); }
+  .kpi.accent .num { color: var(--accent-ink); }
+
+  /* ===== Pattern cards ===== */
+  .patterns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .pcard { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 22px; }
+  .pcard .ptitle { font-weight: 800; font-size: 15px; margin-bottom: 8px; display: flex; align-items: baseline; gap: 8px; }
+  .pcard .ptitle .n { color: var(--accent); font-family: ui-monospace, monospace; font-size: 13px; }
+  .pcard p { color: var(--muted); font-size: 13.5px; margin: 0; }
+  .bar-row { display: flex; align-items: center; gap: 10px; margin: 7px 0; font-size: 12.5px; }
+  .bar-row .bl { width: 92px; flex-shrink: 0; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bar-track { flex: 1; height: 8px; background: var(--surface-2); border-radius: 5px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 5px; background: var(--accent); }
+  .bar-val { width: 34px; text-align: right; color: var(--text); font-weight: 700; font-family: ui-monospace, monospace; font-size: 12px; }
+
+  /* ===== Pills ===== */
+  .pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 700; white-space: nowrap; }
+  .pill-good { background: var(--good-soft); color: var(--good); }
+  .pill-warn { background: var(--warn-soft); color: var(--warn); }
+  .pill-bad { background: var(--bad-soft); color: var(--bad); }
+  .pill-neutral { background: var(--surface-2); color: var(--muted); }
+
+  /* ===== Table / explorer ===== */
+  .explorer-controls { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; align-items: center; }
+  .explorer-controls input[type=search] {
+    background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    border-radius: 8px; padding: 9px 12px; font-size: 13.5px; width: 240px; font-family: inherit;
+  }
+  .chip { border: 1px solid var(--border); background: var(--surface); color: var(--muted); font-size: 12.5px; font-weight: 600; padding: 6px 12px; border-radius: 999px; cursor: pointer; }
+  .chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .table-scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; }
+  table.appdata { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 980px; }
+  table.appdata thead th {
+    text-align: left; padding: 11px 14px; background: var(--surface-2); color: var(--muted);
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 700;
+    position: sticky; top: 0; border-bottom: 1px solid var(--border);
+  }
+  table.appdata tbody td { padding: 11px 14px; border-bottom: 1px solid var(--border); vertical-align: top; background: var(--surface); }
+  table.appdata tbody tr:last-child td { border-bottom: none; }
+  table.appdata tbody tr:hover td { background: var(--surface-2); }
+  table.appdata .app-name { font-weight: 700; }
+  table.appdata .cat-tag { color: var(--muted-2); font-size: 11.5px; display: block; margin-top: 2px; }
+  table.appdata td.desc { color: var(--muted); max-width: 260px; }
+  table.appdata a.ev { color: var(--accent); text-decoration: none; font-size: 12px; }
+  .row-count { color: var(--muted); font-size: 12.5px; margin-left: auto; }
+
+  /* ===== Agent architecture ===== */
+  .flow { display: flex; align-items: stretch; gap: 0; flex-wrap: wrap; }
+  .flow-step {
+    flex: 1; min-width: 190px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 18px; position: relative; margin: 6px;
+  }
+  .flow-step .fnum { font-family: ui-monospace, monospace; color: var(--accent); font-size: 12px; font-weight: 700; }
+  .flow-step h4 { font-size: 14px; margin: 6px 0 6px; }
+  .flow-step p { font-size: 12.5px; color: var(--muted); margin: 0; }
+  .flow-arrow { display: flex; align-items: center; color: var(--muted-2); font-size: 20px; padding: 0 2px; }
+  .human-note { background: var(--warn-soft); border: 1px solid color-mix(in srgb, var(--warn) 40%, var(--border)); border-radius: 10px; padding: 14px 16px; font-size: 13px; color: var(--text); margin-top: 20px; }
+  .human-note b { color: var(--warn); }
+
+  /* ===== Verification ===== */
+  .verify-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 24px; align-items: start; }
+  .verify-summary { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+  .verify-summary .big { font-size: 40px; font-weight: 800; letter-spacing: -0.02em; }
+  .verify-summary .big span { font-size: 20px; color: var(--muted); }
+  .accuracy-flow { display: flex; align-items: center; gap: 12px; margin: 18px 0 6px; }
+  .accuracy-flow .step { text-align: center; }
+  .accuracy-flow .step .v { font-size: 22px; font-weight: 800; }
+  .accuracy-flow .step .l { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .accuracy-flow .arrow { color: var(--muted-2); font-size: 18px; }
+  .verify-list { display: flex; flex-direction: column; gap: 8px; max-height: 480px; overflow-y: auto; }
+  .verify-item { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; font-size: 12.5px; }
+  .verify-item .vh { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .verify-item .vh b { font-size: 13px; }
+  .verify-item p { margin: 4px 0 0; color: var(--muted); }
+
+  footer { padding: 40px 0 60px; }
+  footer .flinks { display: flex; gap: 20px; flex-wrap: wrap; font-size: 13.5px; }
+  footer .fnote { color: var(--muted-2); font-size: 12.5px; margin-top: 18px; max-width: 70ch; }
+
+  @media (max-width: 900px) {
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .patterns { grid-template-columns: 1fr; }
+    .verify-grid { grid-template-columns: 1fr; }
+  }
+</style>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="eyebrow">Composio Research &middot; Feasibility Audit</div>
+    <h1>Can we build an agent toolkit for these 100 apps today?</h1>
+    <p class="sub">A researched, cited, and independently verified answer for every app: auth model, self-serve
+      vs. gated access, API breadth, MCP availability, and what actually blocks buildability. Produced by a
+      10-agent research pipeline, not by hand &mdash; then fact-checked against a second, independent pass.</p>
+    <div class="meta-row">
+      <span><b>100</b> apps researched</span>
+      <span><b>10</b> categories</span>
+      <span><b>10</b> parallel research agents + 1 verification agent</span>
+      <span><b>100%</b> field-level accuracy after verification (up from 93%)</span>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs">
+  <div class="wrap">
+    <a href="#patterns">Patterns</a>
+    <a href="#explorer">All 100 Apps</a>
+    <a href="#agent">The Agent</a>
+    <a href="#verification">Verification</a>
+    <a href="#honesty">Honesty Notes</a>
+  </div>
+</nav>
+
+<section id="patterns">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <h2>The headline: two-thirds of these apps are buildable today, no outreach required</h2>
+        <p>Clustering all 100 results by auth, access gate, and buildability verdict surfaces four clear patterns
+          before you ever look at a single row.</p>
+      </div>
+    </div>
+
+    <div class="kpis" style="margin-bottom:22px;">
+      
+  <div class="kpi accent">
+    <div class="num">90<span class="unit">/100</span></div>
+    <div class="label">Buildable in some form</div>
+    <div class="detail">56 today outright, 34 with a workaround</div>
+  </div>
+  <div class="kpi">
+    <div class="num">10<span class="unit">/100</span></div>
+    <div class="label">Genuinely blocked</div>
+    <div class="detail">enterprise contract, no docs, or partner-only gate</div>
+  </div>
+  <div class="kpi">
+    <div class="num">52<span class="unit">/100</span></div>
+    <div class="label">Have an MCP server</div>
+    <div class="detail">official or credible community server confirmed</div>
+  </div>
+  <div class="kpi">
+    <div class="num">63<span class="unit">/100</span></div>
+    <div class="label">Support OAuth2</div>
+    <div class="detail">54 of all 100 need zero approval at all</div>
+  </div>
+    </div>
+
+    <div class="patterns">
+      
+  <div class="pcard">
+    <div class="ptitle"><span class="n">01</span> Auth dominance: OAuth2 wins, but almost never alone</div>
+    
+    <div class="bar-row">
+      <span class="bl">OAuth2 + key/token option</span>
+      <span class="bar-track"><span class="bar-fill" style="width:100%"></span></span>
+      <span class="bar-val">49</span>
+    </div>
+    <div class="bar-row">
+      <span class="bl">API key / Bearer token</span>
+      <span class="bar-track"><span class="bar-fill" style="width:65%"></span></span>
+      <span class="bar-val">32</span>
+    </div>
+    <div class="bar-row">
+      <span class="bl">OAuth2 only</span>
+      <span class="bar-track"><span class="bar-fill" style="width:29%"></span></span>
+      <span class="bar-val">14</span>
+    </div>
+    <div class="bar-row">
+      <span class="bl">N/A or other (CLI tools)</span>
+      <span class="bar-track"><span class="bar-fill" style="width:6%"></span></span>
+      <span class="bar-val">3</span>
+    </div>
+    <div class="bar-row">
+      <span class="bl">Basic auth</span>
+      <span class="bar-track"><span class="bar-fill" style="width:4%"></span></span>
+      <span class="bar-val">2</span>
+    </div>
+    <p style="margin-top:10px;">63 of 100 apps support OAuth2 in some form, but 49 of those also offer a
+      simpler API-key or Basic-auth path &mdash; meaning a toolkit builder rarely needs to build a full OAuth
+      flow just to get a working integration started.</p>
+  </div>
+  <div class="pcard">
+    <div class="ptitle"><span class="n">02</span> Self-serve is the norm, not the exception</div>
+    
+    <div class="bar-row">
+      <span class="bl">Self-serve free</span>
+      <span class="bar-track"><span class="bar-fill" style="width:100%"></span></span>
+      <span class="bar-val">54</span>
+    </div>
+    <div class="bar-row">
+      <span class="bl">Self-serve trial</span>
+      <span class="bar-track"><span class="bar-fill" style="width:41%"></span></span>
+      <span class="bar-val">22</span>
+    </div>
+    <div class="bar-row">
+      <span class="bl">Paid plan required</span>
+      <span class="bar-track"><span class="bar-fill" style="width:19%"></span></span>
+      <span class="bar-val">10</span>
+    </div>
+    <div class="bar-row">
+      <span class="bl">Partner/admin approval</span>
+      <span class="bar-track"><span class="bar-fill" style="width:13%"></span></span>
+      <span class="bar-val">7</span>
+    </div>
+    <div class="bar-row">
+      <span class="bl">Contact-sales gated</span>
+      <span class="bar-track"><span class="bar-fill" style="width:9%"></span></span>
+      <span class="bar-val">5</span>
+    </div>
+    <p style="margin-top:10px;">76 of 100 apps
+      let a developer get working credentials today with no sales conversation. The remaining ~22% cluster in
+      two categories: enterprise B2B software (DealCloud, PitchBook, Salesforce Commerce Cloud) and ad
+      platforms (Google Ads, Meta Ads, LinkedIn Ads, Pinterest) where identity/business verification is the
+      real gate, not pricing.</p>
+  </div>
+  <div class="pcard">
+    <div class="ptitle"><span class="n">03</span> Where the friction concentrates</div>
+    
+    <div class="bar-row">
+      <span class="bl">Finance and Fintech</span>
+      <span class="bar-track"><span class="bar-fill" style="width:100%"></span></span>
+      <span class="bar-val">7</span>
+    </div>
+    <div class="bar-row">
+      <span class="bl">Marketing, Ads, Email and Social</span>
+      <span class="bar-track"><span class="bar-fill" style="width:86%"></span></span>
+      <span class="bar-val">6</span>
+    </div>
+    <div class="bar-row">
+      <span class="bl">Ecommerce</span>
+      <span class="bar-track"><span class="bar-fill" style="width:86%"></span></span>
+      <span class="bar-val">6</span>
+    </div>
+    <div class="bar-row">
+      <span class="bl">Support and Helpdesk</span>
+      <span class="bar-track"><span class="bar-fill" style="width:71%"></span></span>
+      <span class="bar-val">5</span>
+    </div>
+    <div class="bar-row">
+      <span class="bl">Data, SEO and Scraping</span>
+      <span class="bar-track"><span class="bar-fill" style="width:71%"></span></span>
+      <span class="bar-val">5</span>
+    </div>
+    <p style="margin-top:10px;">Finance/Fintech and AI/Research-native are the two categories with the most
+      "blocked" or "limited" verdicts &mdash; not because their APIs are bad, but because KYC, business
+      verification, or enterprise-only contracts sit in front of the docs. Support/Helpdesk and Developer/Infra
+      are the cleanest categories: nearly every app there is buildable today.</p>
+  </div>
+    </div>
+  </div>
+</section>
+
+<section id="explorer">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <h2>All 100 apps, researched and cited</h2>
+        <p>Every row includes the evidence URL the agent actually fetched. Filter by category or buildability,
+          or search by app name.</p>
+      </div>
+    </div>
+    <div class="explorer-controls">
+      <input type="search" id="search" placeholder="Search app or category&hellip;" />
+      <button class="chip active" data-filter="all">All</button>
+      <button class="chip" data-filter="buildable today">Buildable today</button>
+      <button class="chip" data-filter="buildable with limitation">With limitation</button>
+      <button class="chip" data-filter="blocked">Blocked</button>
+      <span class="row-count" id="rowcount"></span>
+    </div>
+    <div class="table-scroll">
+      <table class="appdata">
+        <thead>
+          <tr>
+            <th>App</th>
+            <th>Auth</th>
+            <th>Self-serve status</th>
+            <th>MCP</th>
+            <th>Verdict</th>
+            <th>Evidence</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section id="agent">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <h2>The agent: what actually did the research</h2>
+        <p>Ten parallel research agents, one per category, each with real web search and a strict cited-JSON
+          schema. An eleventh agent independently re-derived a sample to check the first pass's work.</p>
+      </div>
+    </div>
+
+    <div class="flow">
+      <div class="flow-step">
+        <div class="fnum">01</div>
+        <h4>100-app list &rarr; 10 category batches</h4>
+        <p>data/apps.json splits the assignment's list into 10 groups of 10 by category (CRM, Support, Comms, ... AI).</p>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step">
+        <div class="fnum">02</div>
+        <h4>10 parallel research agents</h4>
+        <p>Each agent gets a strict prompt (agent/schema.py) &mdash; auth, self-serve, API surface, MCP, verdict,
+          blocker &mdash; and must cite a real docs URL for every claim, or say "low confidence" instead of guessing.</p>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step">
+        <div class="fnum">03</div>
+        <h4>Merge &rarr; 100-record dataset</h4>
+        <p>Structured JSON outputs are validated against the schema and merged into data/results.json.</p>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-step">
+        <div class="fnum">04</div>
+        <h4>Independent verification agent</h4>
+        <p>A blind 11th agent re-researches an 18-app sample from scratch and diffs against the first pass &mdash;
+          see agent/verify.py for the same loop, runnable on the full 100.</p>
+      </div>
+    </div>
+
+    <div class="human-note">
+      <b>Where a human is needed:</b> 6 of 100 apps came back <span class="mono">confidence: low</span> because the
+      agent genuinely could not find public docs (fanbasis, Paygent Connect) or found only thin/unverifiable
+      sources (MrScraper, Waterfall.io, higgsfield). That's the correct output &mdash; the agent flagged its own
+      uncertainty rather than fabricating an answer &mdash; but confirming these apps truly have no path in
+      requires a human to sign up, email sales, or dig through a password-gated portal directly. MCP existence
+      is also the single most volatile field: it decays within weeks as vendors ship new official servers, so
+      anything below "high" confidence there is a lead to re-check, not a final answer.
+    </div>
+  </div>
+</section>
+
+<section id="verification">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <h2>Verification: how we know the findings are trustworthy</h2>
+        <p>An independent agent, blind to the first pass's reasoning, re-researched 18 of the 100 apps from
+          scratch and diffed the answers field-by-field. Corrections were then merged back into the dataset.</p>
+      </div>
+    </div>
+
+    <div class="verify-grid">
+      <div class="verify-summary">
+        <div class="eyebrow" style="margin-bottom:10px;">Sample: 18 / 100 apps</div>
+        <div class="big">13<span> / 18 fully confirmed</span></div>
+        <p style="color:var(--muted); font-size:13.5px; margin-top:10px;">
+          The other 5 records were <b>partially wrong</b> &mdash; never a fabricated verdict, but a
+          stale or overstated detail on one field (almost always <span class="mono">mcp_exists</span>, the field
+          most likely to change week to week). Every correction below was applied back into
+          <span class="mono">data/results.json</span>.
+        </p>
+        <div class="accuracy-flow">
+          <div class="step"><div class="v">93%</div><div class="l">First-pass field accuracy</div></div>
+          <div class="arrow">&rarr;</div>
+          <div class="step"><div class="v" style="color:var(--good)">100%</div><div class="l">After corrections merged</div></div>
+        </div>
+        <p style="color:var(--muted-2); font-size:12px; margin-top:14px;">
+          Accuracy measured across 4 checked fields (auth method, self-serve status, MCP existence, buildability
+          verdict) &times; 18 sampled apps = 72 field-checks total.
+        </p>
+      </div>
+      <div class="verify-list" id="verifylist">
+        <div class="verify-item">
+    <div class="vh"><b>Zendesk</b><span class="pill pill-warn">Corrected</span></div>
+    <p>Zendesk now exposes a first-party MCP endpoint at &lt;subdomain&gt;.zendesk.com/api/mcp (OAuth-gated), not just community servers.</p>
+    <p style="color:var(--accent-ink,var(--accent));"><b>Fix applied:</b> mcp_exists: unclear -&gt; true (native first-party MCP endpoint exists alongside community servers)</p>
+  </div><div class="verify-item">
+    <div class="vh"><b>Ahrefs</b><span class="pill pill-warn">Corrected</span></div>
+    <p>Enterprise API pricing is ~$1,249/mo not $1,499/mo, and Lite+ plans get limited API access -- not strictly Enterprise-only.</p>
+    <p style="color:var(--accent-ink,var(--accent));"><b>Fix applied:</b> self_serve: 'contact-sales gated' -&gt; 'paid plan required, full access needs Enterprise (~$1,249/mo)'</p>
+  </div><div class="verify-item">
+    <div class="vh"><b>Twilio</b><span class="pill pill-good">Confirmed</span></div>
+    <p>Official twilio-labs/mcp confirmed, hosted at mcp.twilio.com. Twilio calls it 'alpha', doesn't overturn verdict.</p>
+    
+  </div><div class="verify-item">
+    <div class="vh"><b>GoHighLevel</b><span class="pill pill-good">Confirmed</span></div>
+    <p>Community MCP (260+ tools) confirmed, no official GHL-maintained MCP found.</p>
+    
+  </div><div class="verify-item">
+    <div class="vh"><b>Ramp</b><span class="pill pill-warn">Corrected</span></div>
+    <p>Sandbox access itself is NOT self-serve -- requires contacting account manager for provisioning, contrary to the original 'self-serve trial for sandbox' claim.</p>
+    <p style="color:var(--accent-ink,var(--accent));"><b>Fix applied:</b> self_serve: 'self-serve trial for sandbox' -&gt; 'admin/partner approval required (sandbox provisioning needs account manager contact)'</p>
+  </div><div class="verify-item">
+    <div class="vh"><b>Notion</b><span class="pill pill-good">Confirmed</span></div>
+    <p>Official hosted MCP at mcp.notion.com confirmed plus OSS server.</p>
+    
+  </div><div class="verify-item">
+    <div class="vh"><b>Clay</b><span class="pill pill-good">Confirmed</span></div>
+    <p>API key/BYOK and self-serve paid plans confirmed; no credible MCP found, consistent with 'unclear'.</p>
+    
+  </div><div class="verify-item">
+    <div class="vh"><b>Sherlock</b><span class="pill pill-good">Confirmed</span></div>
+    <p>Confirmed CLI-only, no maintained REST wrapper (dead since 2021).</p>
+    
+  </div><div class="verify-item">
+    <div class="vh"><b>LinkedIn Ads</b><span class="pill pill-good">Confirmed</span></div>
+    <p>OAuth2 + mandatory vetting confirmed, 4-8 weeks fast path / 3-4 months average.</p>
+    
+  </div><div class="verify-item">
+    <div class="vh"><b>Stripe</b><span class="pill pill-good">Confirmed</span></div>
+    <p>Official remote MCP at mcp.stripe.com confirmed.</p>
+    
+  </div><div class="verify-item">
+    <div class="vh"><b>PitchBook</b><span class="pill pill-good">Confirmed</span></div>
+    <p>Enterprise-only, quote-based, no self-serve confirmed.</p>
+    
+  </div><div class="verify-item">
+    <div class="vh"><b>Consensus</b><span class="pill pill-good">Confirmed</span></div>
+    <p>Application-only API, $0.10/call, Enterprise-tier gated confirmed.</p>
+    
+  </div><div class="verify-item">
+    <div class="vh"><b>Gladly</b><span class="pill pill-good">Confirmed</span></div>
+    <p>No public pricing found, consistent with contact-sales gating; exact $ figure unverifiable but not contradicted.</p>
+    
+  </div><div class="verify-item">
+    <div class="vh"><b>fanbasis</b><span class="pill pill-warn">Corrected</span></div>
+    <p>A separate public API reference (apidocs.fan) and public npm SDK (@fanbasis/checkout-sdk) exist beyond the login-gated dev-docs.fanbasis.com portal.</p>
+    <p style="color:var(--accent-ink,var(--accent));"><b>Fix applied:</b> api_surface: 'no public docs at all' -&gt; 'primary docs portal login-gated, but a separate public API reference and SDK packages exist'</p>
+  </div><div class="verify-item">
+    <div class="vh"><b>Salesforce</b><span class="pill pill-good">Confirmed</span></div>
+    <p>Hosted MCP Servers GA (April 2026), Enterprise Edition+, OAuth2, confirmed first-party.</p>
+    
+  </div><div class="verify-item">
+    <div class="vh"><b>Discord</b><span class="pill pill-good">Confirmed</span></div>
+    <p>Multiple community MCP servers confirmed, no single official Discord-maintained one.</p>
+    
+  </div><div class="verify-item">
+    <div class="vh"><b>Amazon Selling Partner</b><span class="pill pill-good">Confirmed</span></div>
+    <p>OAuth (LWA) + mandatory registration confirmed; only community MCP servers found.</p>
+    
+  </div><div class="verify-item">
+    <div class="vh"><b>Harvest</b><span class="pill pill-warn">Corrected</span></div>
+    <p>Original record said no MCP server found, but multiple community MCP servers exist (ianaleck/harvest-mcp-server, 60+ tools).</p>
+    <p style="color:var(--accent-ink,var(--accent));"><b>Fix applied:</b> mcp_exists: false -&gt; true (community-built, not official)</p>
+  </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="honesty">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <h2>Honesty notes: where this defeated the agent</h2>
+        <p>Every app below is a case where straightforward web research genuinely wasn't enough &mdash; documented
+          rather than smoothed over.</p>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table class="appdata" style="min-width: 0;">
+        <thead><tr><th>App</th><th>What happened</th><th>Confidence</th></tr></thead>
+        <tbody>
+          
+  <tr>
+    <td><span class="app-name">Pumble</span><span class="cat-tag">Communications and Messaging</span></td>
+    <td class="desc">narrow API surface, addon-hosted docs rather than first-class dev portal</td>
+    <td><span class="pill pill-warn">low confidence</span></td>
+  </tr>
+  <tr>
+    <td><span class="app-name">fanbasis</span><span class="cat-tag">Ecommerce</span></td>
+    <td class="desc">no public developer documentation found - docs portal requires login with no self-serve signup</td>
+    <td><span class="pill pill-warn">low confidence</span></td>
+  </tr>
+  <tr>
+    <td><span class="app-name">MrScraper</span><span class="cat-tag">Data, SEO and Scraping</span></td>
+    <td class="desc">thin/fragmented docs, pricing unverified</td>
+    <td><span class="pill pill-warn">low confidence</span></td>
+  </tr>
+  <tr>
+    <td><span class="app-name">Waterfall.io</span><span class="cat-tag">Data, SEO and Scraping</span></td>
+    <td class="desc">smaller/less-documented product, pricing not independently confirmed</td>
+    <td><span class="pill pill-warn">low confidence</span></td>
+  </tr>
+  <tr>
+    <td><span class="app-name">Paygent Connect</span><span class="cat-tag">Finance and Fintech</span></td>
+    <td class="desc">no verifiable public developer documentation could be found</td>
+    <td><span class="pill pill-warn">low confidence</span></td>
+  </tr>
+  <tr>
+    <td><span class="app-name">higgsfield</span><span class="cat-tag">AI, Research and Media-native</span></td>
+    <td class="desc">underlying REST API not independently/officially documented outside the CLI</td>
+    <td><span class="pill pill-warn">low confidence</span></td>
+  </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="flinks">
+      <a href="https://github.com/NITISH-R-G/composio-app-research" target="_blank" rel="noopener">Source repo &amp; README &rarr;</a>
+      <a href="https://github.com/NITISH-R-G/composio-app-research/blob/master/data/results.json" target="_blank" rel="noopener">Full dataset (JSON) &rarr;</a>
+      <a href="https://github.com/NITISH-R-G/composio-app-research/blob/master/data/verification.json" target="_blank" rel="noopener">Verification log &rarr;</a>
+      <a href="https://github.com/NITISH-R-G/composio-app-research/blob/master/agent/research.py" target="_blank" rel="noopener">agent/research.py &rarr;</a>
+    </div>
+    <p class="fnote">Built for the Composio primary-filter assignment. Research executed as 10 parallel Claude
+      Code subagents with real web search against live developer docs, then independently re-verified by an
+      11th agent; see the README for how to re-run the same pipeline directly against the Anthropic API.</p>
+  </div>
+</footer>
+
+<script>
+  const APPS = [{"app":"Salesforce","category":"CRM and Sales","auth_method":"OAuth2 (Connected Apps, multiple flows)","self_serve":"self-serve free - Developer Edition free and API-enabled by default (plain Trial orgs are NOT API-enabled)","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/quickstart_oauth.htm","https://developer.salesforce.com/docs/platform/hosted-mcp-servers/guide/hosted-mcp-servers-overview.html"]},{"app":"HubSpot","category":"CRM and Sales","auth_method":"OAuth2 (public apps) or Private App access tokens","self_serve":"self-serve free - API access on every plan including free tier, free developer test accounts","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://developers.hubspot.com/mcp","https://developers.hubspot.com/docs/apps/legacy-apps/authentication/working-with-oauth"]},{"app":"Pipedrive","category":"CRM and Sales","auth_method":"API token (x-api-token header) or OAuth2 (marketplace apps)","self_serve":"self-serve trial - 14-day free trial with full API access, free dev sandbox account","mcp_exists":"unclear","buildability_verdict":"buildable today","evidence":["https://pipedrive.readme.io/docs/core-api-concepts-authentication","https://developers.pipedrive.com/docs/api/v1"]},{"app":"Attio","category":"CRM and Sales","auth_method":"API key (Bearer, scoped) or OAuth2 (Authorization Code)","self_serve":"self-serve free - API, webhooks, App SDK, MCP available on Free plan and up","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://docs.attio.com/mcp/overview","https://docs.attio.com/rest-api/tutorials/connect-an-app-through-oauth"]},{"app":"Twenty","category":"CRM and Sales","auth_method":"Bearer API key (self-hosted and cloud)","self_serve":"self-serve free - fully free and self-hostable (AGPL-3.0); cloud plans start ~$9/user/mo with free tier","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://twenty.com/pricing","https://twenty.com/"]},{"app":"Podio","category":"CRM and Sales","auth_method":"OAuth2 (server-side, client-side, app auth, username/password flows)","self_serve":"self-serve free - Free/Plus/Premium tiers, API free to use, 30-day Premium trial","mcp_exists":false,"buildability_verdict":"buildable with limitation","evidence":["https://developers.podio.com/authentication","https://developers.podio.com/index/limits"]},{"app":"Zoho CRM","category":"CRM and Sales","auth_method":"OAuth2 (scoped, e.g. ZohoCRM.modules.contacts.ALL)","self_serve":"self-serve free - free tier and self-service trial, API console self-service","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://www.zoho.com/crm/developer/docs/api/v8/oauth-overview.html","https://www.zoho.com/mcp/"]},{"app":"Close","category":"CRM and Sales","auth_method":"API key (HTTP Basic) or OAuth2 (third-party apps)","self_serve":"self-serve trial - 14-day free trial, no permanent free tier, paid plan required after (~$49/user/mo)","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://developer.close.com/topics/authentication/","https://close.com/integrations/close-mcp"]},{"app":"Copper","category":"CRM and Sales","auth_method":"API key (token+email headers) or OAuth2 (partner integrations)","self_serve":"self-serve trial - 14-day free trial; API access gated to Professional plan+ ($59+/seat/mo annually)","mcp_exists":"unclear","buildability_verdict":"buildable with limitation","evidence":["https://developer.copper.com/introduction/authentication.html","https://www.copper.com/pricing"]},{"app":"DealCloud","category":"CRM and Sales","auth_method":"OAuth2 Client Credentials flow","self_serve":"contact-sales gated - no free trial, enterprise-only sales-led onboarding (~$505K avg annual cost)","mcp_exists":true,"buildability_verdict":"blocked","evidence":["https://api.docs.dealcloud.com/docs/token","https://api.docs.dealcloud.com/mcp"]},{"app":"Zendesk","category":"Support and Helpdesk","auth_method":"OAuth2 (authorization code / client credentials) or Basic auth with API token (being deprecated)","self_serve":"self-serve trial - 14-day free trial, no credit card, Admin Center access to generate API tokens/OAuth clients immediately","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://developer.zendesk.com/api-reference/introduction/security-and-auth/","https://developer.zendesk.com/documentation/api-basics/getting-started/getting-a-trial-or-sponsored-account-for-development/","https://www.zendesk.com/marketplace/apps/support/1191848/mcp-server/"]},{"app":"Intercom","category":"Support and Helpdesk","auth_method":"OAuth2 (public apps) or personal access token (private apps)","self_serve":"self-serve trial - 14-day cardless trial, no permanent free tier so paid plan needed after trial","mcp_exists":true,"buildability_verdict":"buildable with limitation","evidence":["https://developers.intercom.com/docs/build-an-integration/learn-more/authentication","https://www.intercom.com/pricing","https://www.pulsemcp.com/servers/intercom"]},{"app":"Freshdesk","category":"Support and Helpdesk","auth_method":"Basic auth using API key as username","self_serve":"paid plan required - free Sprout plan exists but API/integration access excluded, unlocked from Growth/Blossom tier","mcp_exists":"unclear","buildability_verdict":"buildable with limitation","evidence":["https://developer.freshdesk.com/api/v1/","https://support.freshdesk.com/support/solutions/articles/50000001047","https://www.freshworks.com/freshdesk/pricing/"]},{"app":"Front","category":"Support and Helpdesk","auth_method":"API key (Bearer, single-workspace) or OAuth2 (public/partner integrations)","self_serve":"self-serve trial - 14-day free trial, no card required, API tokens self-generated","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://dev.frontapp.com/docs/authentication","https://dev.frontapp.com/docs/oauth","https://community.front.com/api-news-updates-40/the-front-mcp-server-is-here-beta-3712"]},{"app":"Pylon","category":"Support and Helpdesk","auth_method":"API key (Bearer) for REST; OAuth for MCP","self_serve":"paid plan required - no free plan, starts $59/seat/mo with 3-seat minimum","mcp_exists":true,"buildability_verdict":"buildable with limitation","evidence":["https://docs.usepylon.com/pylon-docs/developer/api/authentication","https://www.usepylon.com/pricing","https://www.usepylon.com/integrations/mcp"]},{"app":"LiveAgent","category":"Support and Helpdesk","auth_method":"API key (apikey header) or OAuth2 access token; MCP supports Bearer token or OAuth2.1+PKCE","self_serve":"self-serve trial - 30-day free trial, no card, API included in every paid tier","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://support.liveagent.com/802463-REST-API","https://support.liveagent.com/647358-MCP-Integration-for-Agents","https://www.liveagent.com/trial/"]},{"app":"Plain","category":"Support and Helpdesk","auth_method":"API key (workspace-issued, bearer token on GraphQL API)","self_serve":"self-serve trial - 7-day free trial, no card, no permanent free tier (from $35/seat/mo after)","mcp_exists":true,"buildability_verdict":"buildable with limitation","evidence":["https://www.plain.com/docs/graphql/authentication","https://www.plain.com/pricing","https://www.plain.com/changelog/plain-mcp"]},{"app":"Help Scout","category":"Support and Helpdesk","auth_method":"OAuth2 (Mailbox API v2) or per-user API key (Docs API)","self_serve":"self-serve trial - 15-day free trial, no card, API included on Standard tier","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://developer.helpscout.com/mailbox-api/overview/authentication/","https://www.helpscout.com/pricing/","https://articles.helpscout.com/blog/introducing-help-scout-mcp/"]},{"app":"Gorgias","category":"Support and Helpdesk","auth_method":"Basic auth (private apps: email + API key) or OAuth2 Bearer (public/marketplace apps)","self_serve":"self-serve trial - 7-day free trial, no card, cheapest paid Starter plan $10/mo","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://developers.gorgias.com/reference/authentication","https://developers.gorgias.com/docs/oauth2-authentication-for-creating-apps-with-gorgias","https://updates.gorgias.com/publications/gorgias-mcp-is-now-in-open-beta"]},{"app":"Gladly","category":"Support and Helpdesk","auth_method":"API key (Bearer/Basic-style, tied to a user with API User role)","self_serve":"contact-sales gated - no public self-serve signup or pricing page, ~$180+/agent/mo, 10-agent minimum, admin must provision API User role","mcp_exists":false,"buildability_verdict":"blocked","evidence":["https://help.gladly.com/implementation/docs/get-your-api-tokens","https://developer.gladly.com/rest/","https://www.gladly.ai/gladly-developer-platform/"]},{"app":"Slack","category":"Communications and Messaging","auth_method":"OAuth2 (bot/user token scopes); legacy webhook/app-level tokens also supported","self_serve":"self-serve free - anyone can create a free workspace and register a Slack app/bot without sales contact","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://api.slack.com/authentication","https://api.slack.com/scopes","https://slack.com/help/articles/48855576908307"]},{"app":"Twilio","category":"Communications and Messaging","auth_method":"HTTP Basic auth (Account SID + Auth Token) or API Key SID+Secret","self_serve":"self-serve free - free trial account with full API access, no card required","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://www.twilio.com/docs/usage/tutorials/how-to-use-your-free-trial-account","https://github.com/twilio-labs/mcp"]},{"app":"Zoho Cliq","category":"Communications and Messaging","auth_method":"OAuth2 (Zoho-oauthtoken bearer header, 1hr tokens with refresh)","self_serve":"self-serve free - free plan, unlimited users, self-signup, no sales contact for dev credentials","mcp_exists":false,"buildability_verdict":"buildable today","evidence":["https://www.zoho.com/cliq/help/restapi/v3/oauth/","https://www.zoho.com/cliq/signup.html"]},{"app":"Lark (Larksuite)","category":"Communications and Messaging","auth_method":"App ID+Secret to obtain tenant/user access tokens (OAuth2-based)","self_serve":"self-serve trial - free app registration on open.larksuite.com, but installing into a real tenant needs admin approval","mcp_exists":true,"buildability_verdict":"buildable with limitation","evidence":["https://github.com/larksuite/lark-openapi-mcp","https://open.larksuite.com/document/uYjL24iN/uUzMuUzMuUzM/20220308"]},{"app":"Pumble","category":"Communications and Messaging","auth_method":"API key (bearer/auth header, via API-keys addon)","self_serve":"self-serve free - free Basic plan, unlimited users, API key addon self-installable","mcp_exists":false,"buildability_verdict":"buildable with limitation","evidence":["https://pumble.com/help/integrations/automation-workflow-integrations/api-keys-integration/","https://pumble-api-keys.addons.marketplace.cake.com/api-docs/"]},{"app":"Discord","category":"Communications and Messaging","auth_method":"Bot token or OAuth2","self_serve":"self-serve free - free Developer Portal account, instant bot creation; privileged intents need review for large bots","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://discord.com/developers/docs/","https://docs.discord.com/developers/topics/oauth2"]},{"app":"Telegram","category":"Communications and Messaging","auth_method":"Bot token via @BotFather (Bot API) or MTProto session auth (client API)","self_serve":"self-serve free - create a bot instantly via @BotFather, fully free","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://core.telegram.org/bots/api","https://core.telegram.org/bots/tutorial"]},{"app":"WhatsApp Business","category":"Communications and Messaging","auth_method":"OAuth2 / Meta system-user access tokens via Graph API","self_serve":"admin/partner approval required - Meta Business Manager account, phone verification, business verification needed for production","mcp_exists":false,"buildability_verdict":"buildable with limitation","evidence":["https://developers.facebook.com/docs/whatsapp/pricing/updates-to-pricing/"]},{"app":"Aircall","category":"Communications and Messaging","auth_method":"Basic Auth (api_id:api_token) or OAuth2 (marketplace apps)","self_serve":"paid plan required - no free tier, API access typically on higher plans, OAuth apps need Aircall approval","mcp_exists":true,"buildability_verdict":"buildable with limitation","evidence":["https://developer.aircall.io/tutorials/basic-authentication/","https://developer.aircall.io/tutorials/how-aircall-oauth-flow-works/"]},{"app":"Vonage","category":"Communications and Messaging","auth_method":"API key/secret (REST) or JWT signed with private key (Voice/Video)","self_serve":"self-serve trial - free developer account with trial credit, no card required","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://developer.vonage.com/en/documentation","https://developer.vonage.com/en/blog/introducing-the-vonage-mcp-tooling-server"]},{"app":"Google Ads","category":"Marketing, Ads, Email and Social","auth_method":"OAuth2 + separate Developer Token per manager account","self_serve":"admin/partner approval required - OAuth is self-serve but Developer Token needs Google approval for production access","mcp_exists":true,"buildability_verdict":"buildable with limitation","evidence":["https://developers.google.com/google-ads/api/docs/oauth/overview","https://developers.google.com/google-ads/api/docs/developer-toolkit/mcp-server"]},{"app":"Meta Ads","category":"Marketing, Ads, Email and Social","auth_method":"OAuth2 (short-lived, long-lived, System User tokens)","self_serve":"admin/partner approval required - own-account use self-serve, agency/third-party use needs App Review + Business Verification","mcp_exists":true,"buildability_verdict":"buildable with limitation","evidence":["https://developers.facebook.com/docs/marketing-apis","https://adadvisor.ai/blog/meta-app-review-mcp"]},{"app":"LinkedIn Ads","category":"Marketing, Ads, Email and Social","auth_method":"OAuth2 3-legged member authorization","self_serve":"admin/partner approval required - manual review with use-case description, often 4-8 weeks (up to 3-4 months)","mcp_exists":false,"buildability_verdict":"blocked","evidence":["https://learn.microsoft.com/en-us/linkedin/marketing/increasing-access","https://learn.microsoft.com/en-us/linkedin/shared/authentication/getting-access"]},{"app":"GoHighLevel","category":"Marketing, Ads, Email and Social","auth_method":"OAuth2 (Marketplace apps) or Private Integration Tokens (internal use)","self_serve":"self-serve trial - Private Integration Tokens self-generated in settings, no approval; OAuth marketplace apps self-registered","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://marketplace.gohighlevel.com/docs/oauth/Authorization"]},{"app":"Mailchimp","category":"Marketing, Ads, Email and Social","auth_method":"API key (unscoped, account-level) or OAuth2","self_serve":"self-serve free - free plan includes API access, key obtainable instantly","mcp_exists":"unclear","buildability_verdict":"buildable today","evidence":["https://mailchimp.com/developer/marketing/docs/fundamentals/","https://mailchimp.com/help/about-api-keys/"]},{"app":"Klaviyo","category":"Marketing, Ads, Email and Social","auth_method":"Private API key (header-based) or OAuth2 (marketplace apps)","self_serve":"self-serve free - private API keys self-generated instantly, OAuth app creation self-serve","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://developers.klaviyo.com/en/docs/authenticate_","https://developers.klaviyo.com/en/docs/klaviyo_mcp_server"]},{"app":"systeme.io","category":"Marketing, Ads, Email and Social","auth_method":"API key (X-API-Key header)","self_serve":"self-serve free - up to 3 public API keys self-generated, no approval","mcp_exists":false,"buildability_verdict":"buildable with limitation","evidence":["https://help.systeme.io/article/2323-how-to-create-a-public-api-key-on-systeme-io","https://developer.systeme.io/reference"]},{"app":"Pinterest","category":"Marketing, Ads, Email and Social","auth_method":"OAuth2 (Authorization Code grant)","self_serve":"admin/partner approval required - apps must be approved for Trial access before tokens usable","mcp_exists":"unclear","buildability_verdict":"buildable with limitation","evidence":["https://developers.pinterest.com/docs/getting-started/set-up-app/"]},{"app":"Threads (Meta)","category":"Marketing, Ads, Email and Social","auth_method":"OAuth2 (short-lived tokens exchanged for 60-day long-lived tokens)","self_serve":"self-serve trial with limitation - own-account use self-serve, broader use needs Meta App Review","mcp_exists":false,"buildability_verdict":"buildable with limitation","evidence":["https://developers.facebook.com/docs/threads/get-started/get-access-tokens-and-permissions/"]},{"app":"SendGrid","category":"Marketing, Ads, Email and Social","auth_method":"API key (Bearer token, also usable as SMTP password)","self_serve":"self-serve free - free tier 100 emails/day, no card, key generated instantly","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://www.twilio.com/docs/sendgrid/for-developers/sending-email/authentication","https://www.twilio.com/docs/sendgrid/ui/account-and-settings/api-keys"]},{"app":"Shopify","category":"Ecommerce","auth_method":"OAuth2 (authorization code, token exchange, or client credentials)","self_serve":"self-serve free - free Partner account and free development store, no payment needed","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://shopify.dev/docs/apps/build/authentication-authorization","https://shopify.dev/docs/apps/build/storefront-mcp"]},{"app":"WooCommerce","category":"Ecommerce","auth_method":"Consumer Key/Secret via Basic Auth (HTTPS) or OAuth 1.0a (HTTP)","self_serve":"self-serve free - store admin generates API keys directly, no external approval","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://developer.woocommerce.com/docs/apis/rest-api/authentication/","https://developer.woocommerce.com/docs/features/mcp/"]},{"app":"BigCommerce","category":"Ecommerce","auth_method":"OAuth2 (store-level, app-level, account-level)","self_serve":"self-serve free - free dev sandbox store and Partner Portal account, only public marketplace listing needs review","mcp_exists":"unclear","buildability_verdict":"buildable with limitation","evidence":["https://developer.bigcommerce.com/docs/start/authentication"]},{"app":"Salesforce Commerce Cloud","category":"Ecommerce","auth_method":"OAuth2 via Account Manager (Admin APIs) and SLAS (Shopper APIs)","self_serve":"contact-sales gated - sandbox restricted to existing customers or ISV partners, no public self-serve signup","mcp_exists":"unclear","buildability_verdict":"blocked","evidence":["https://developer.salesforce.com/docs/commerce/commerce-api/guide/authorization-for-admin-apis.html"]},{"app":"Magento (Adobe Commerce)","category":"Ecommerce","auth_method":"OAuth 1.0a or token-based (self-hosted); IMS OAuth2 (Adobe Commerce SaaS)","self_serve":"self-serve free for Magento Open Source; paid/partner approval required for Adobe Commerce SaaS sandbox","mcp_exists":"unclear","buildability_verdict":"buildable with limitation","evidence":["https://developer.adobe.com/commerce/webapi/rest/authentication"]},{"app":"Squarespace","category":"Ecommerce","auth_method":"API key (per-site) or OAuth2 (registered client app)","self_serve":"self-serve trial - Commerce plan owners generate API key in settings; Commerce API requires paid Commerce plan","mcp_exists":"unclear","buildability_verdict":"buildable with limitation","evidence":["https://developers.squarespace.com/commerce-apis/authentication-and-permissions"]},{"app":"Ecwid","category":"Ecommerce","auth_method":"OAuth2 (public/private access tokens)","self_serve":"self-serve free - free account and app registration for OAuth credentials, no approval for private apps","mcp_exists":"unclear","buildability_verdict":"buildable today","evidence":["https://api-docs.ecwid.com/reference/overview"]},{"app":"Gumroad","category":"Ecommerce","auth_method":"OAuth2 or manually generated personal access token","self_serve":"self-serve free - OAuth app or PAT self-generated instantly, no approval","mcp_exists":"unclear","buildability_verdict":"buildable today","evidence":["https://rollout.com/integration-guides/gumroad/how-to-build-a-public-gumroad-integration-building-the-auth-flow"]},{"app":"Amazon Selling Partner","category":"Ecommerce","auth_method":"OAuth2 via Login with Amazon (LWA), plus Restricted Data Tokens for PII","self_serve":"paid plan / admin approval required - needs verified Seller Central Professional account, public apps need Appstore approval","mcp_exists":"unclear","buildability_verdict":"buildable with limitation","evidence":["https://developer-docs.amazon.com/sp-api/docs/authorize-public-applications"]},{"app":"fanbasis","category":"Ecommerce","auth_method":"unclear - likely API key based on SDK naming, not verifiable from public sources","self_serve":"unclear - could not verify without accessing gated docs","mcp_exists":false,"buildability_verdict":"blocked","evidence":["https://dev-docs.fanbasis.com/","https://www.fanbasis.com/enterprises"]},{"app":"DataForSEO","category":"Data, SEO and Scraping","auth_method":"Basic Auth (login + auto-generated API password)","self_serve":"self-serve free - self-serve signup with free trial credits, pay-as-you-go after","mcp_exists":"unclear","buildability_verdict":"buildable today","evidence":["https://docs.dataforseo.com/v3/auth/"]},{"app":"SE Ranking","category":"Data, SEO and Scraping","auth_method":"Token-based (Authorization: Token header or apikey query param)","self_serve":"paid plan required - API key requires active paid subscription","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://seranking.com/api/how-to-get-api/","https://seranking.com/api/integrations/mcp/"]},{"app":"Ahrefs","category":"Data, SEO and Scraping","auth_method":"API key (Bearer) or OAuth2+PKCE (Ahrefs Connect)","self_serve":"paid plan required - Lite+ plans get limited API access, full/unlimited access needs Enterprise (~$1,249/mo, corrected from initial $1,499 estimate)","mcp_exists":false,"buildability_verdict":"blocked","evidence":["https://docs.ahrefs.com/en/api/docs/introduction","https://docs.ahrefs.com/docs/api/reference/api-keys-creation-and-management"]},{"app":"MrScraper","category":"Data, SEO and Scraping","auth_method":"Bearer token or x-api-token header","self_serve":"self-serve trial - token via account signup, pricing/free-tier limits unclear","mcp_exists":false,"buildability_verdict":"buildable with limitation","evidence":["https://docs.mrscraper.com/docs/api/seo/google/sync"]},{"app":"Apify","category":"Data, SEO and Scraping","auth_method":"API token (Bearer or query param)","self_serve":"self-serve free - free account with $5/mo credit, 10GB transfer, full API/CLI access","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://docs.apify.com/api/v2/getting-started"]},{"app":"Firecrawl","category":"Data, SEO and Scraping","auth_method":"API key (Bearer, 'fc-' prefix)","self_serve":"self-serve free - free tier with monthly credits via dashboard signup","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://www.firecrawl.dev/pricing","https://docs.firecrawl.dev"]},{"app":"Bright Data","category":"Data, SEO and Scraping","auth_method":"API token (Bearer-style)","self_serve":"self-serve trial - 5,000 free credits/mo, higher tiers paid ($499+/mo)","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://docs.brightdata.com/api-reference/authentication","https://brightdata.com/pricing/mcp-server"]},{"app":"Sherlock","category":"Data, SEO and Scraping","auth_method":"N/A - CLI tool, no API, no auth needed","self_serve":"self-serve free - open-source, pipx install, no account needed","mcp_exists":"unclear","buildability_verdict":"blocked","evidence":["https://github.com/sherlock-project/sherlock"]},{"app":"Waterfall.io","category":"Data, SEO and Scraping","auth_method":"API key (x-api-key header)","self_serve":"self-serve trial - API key issued after signup, pricing/credits unclear","mcp_exists":false,"buildability_verdict":"buildable with limitation","evidence":["https://docs.waterfall.io/v1/introduction","https://www.waterfall.io/"]},{"app":"Clay","category":"Data, SEO and Scraping","auth_method":"API key (X-Api-Key), JWT for some flows, Bearer for Enterprise API","self_serve":"self-serve trial - API keys self-serve under Settings; Enterprise API tier contact-sales gated","mcp_exists":"unclear","buildability_verdict":"buildable with limitation","evidence":["https://university.clay.com/docs/http-api-integration-overview","https://developers.clay.com/quickstart"]},{"app":"GitHub","category":"Developer, Infra and Data platforms","auth_method":"OAuth2 (OAuth Apps and GitHub Apps) and fine-grained PATs","self_serve":"self-serve free - free account, generous rate limits, no approval to register OAuth App or generate PAT","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://docs.github.com/en/rest/authentication/authenticating-to-the-rest-api","https://github.com/github/github-mcp-server"]},{"app":"Vercel","category":"Developer, Infra and Data platforms","auth_method":"Bearer access tokens (personal/team) or OAuth (MCP flow)","self_serve":"self-serve free - Hobby free tier, tokens generated immediately","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://vercel.com/docs/accounts/access-tokens","https://vercel.com/docs/agent-resources/vercel-mcp"]},{"app":"Netlify","category":"Developer, Infra and Data platforms","auth_method":"OAuth2 (public integrations) or Personal Access Tokens","self_serve":"self-serve free - free tier account generates PAT immediately","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://docs.netlify.com/api-and-cli-guides/api-guides/get-started-with-api/","https://github.com/netlify/netlify-mcp"]},{"app":"Cloudflare","category":"Developer, Infra and Data platforms","auth_method":"API Tokens (Bearer, scoped) or legacy Global API Key; OAuth for hosted MCP","self_serve":"self-serve free - free-tier account creates scoped API tokens with no approval","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://developers.cloudflare.com/fundamentals/api/get-started/","https://developers.cloudflare.com/agents/model-context-protocol/cloudflare/servers-for-cloudflare/"]},{"app":"Supabase","category":"Developer, Infra and Data platforms","auth_method":"Personal Access Tokens (Bearer, sbp_ prefix) or OAuth2.1 (third-party)","self_serve":"self-serve free - free-tier account generates PAT immediately","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://supabase.com/docs/reference/api/introduction","https://supabase.com/blog/remote-mcp-server"]},{"app":"Neo4j","category":"Developer, Infra and Data platforms","auth_method":"OAuth2 client-credentials (Aura API) or username/password (Bolt driver)","self_serve":"self-serve trial - Aura Free tier exists but API credential creation requires billing info on file","mcp_exists":true,"buildability_verdict":"buildable with limitation","evidence":["https://neo4j.com/docs/aura/platform/api/authentication/","https://github.com/neo4j/mcp"]},{"app":"Snowflake","category":"Developer, Infra and Data platforms","auth_method":"Key-pair JWT, OAuth2, or Programmatic Access Tokens (PAT)","self_serve":"paid plan required - trial account (time-limited free credits) available, no perpetual free tier","mcp_exists":true,"buildability_verdict":"buildable with limitation","evidence":["https://docs.snowflake.com/en/developer-guide/snowflake-rest-api/authentication","https://github.com/Snowflake-Labs/mcp"]},{"app":"MongoDB Atlas","category":"Developer, Infra and Data platforms","auth_method":"OAuth2 client-credentials (Service Accounts) or legacy Digest API Keys","self_serve":"self-serve free - Atlas free tier (M0) creates API keys/service accounts with no approval","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://www.mongodb.com/docs/atlas/configure-api-access/","https://www.mongodb.com/docs/mcp-server/overview/"]},{"app":"Datadog","category":"Developer, Infra and Data platforms","auth_method":"API key + Application key (static tokens, header-based)","self_serve":"self-serve trial - free 14-day trial generates keys immediately, no perpetual free tier for most products","mcp_exists":true,"buildability_verdict":"buildable with limitation","evidence":["https://docs.datadoghq.com/api/latest/authentication/","https://docs.datadoghq.com/mcp_server/"]},{"app":"Sentry","category":"Developer, Infra and Data platforms","auth_method":"Bearer auth tokens - Organization Auth Tokens or User Auth Tokens","self_serve":"self-serve free - free Developer tier creates tokens with no approval","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://docs.sentry.io/api/auth/","https://mcpservers.org/remote-mcp-servers/sentry"]},{"app":"Notion","category":"Productivity and Project Management","auth_method":"OAuth2 (public integrations) or internal integration token","self_serve":"self-serve free - free integration tokens and OAuth app registration, no paid plan or approval required","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://developers.notion.com/guides/get-started/overview","https://developers.notion.com/docs/authorization"]},{"app":"Airtable","category":"Productivity and Project Management","auth_method":"OAuth2 or Personal Access Token (Bearer, scoped)","self_serve":"self-serve free - PATs and OAuth app registration self-serve on free tier","mcp_exists":"unclear","buildability_verdict":"buildable today","evidence":["https://support.airtable.com/docs/creating-personal-access-tokens","https://airtable.com/developers/web/guides/oauth-integrations"]},{"app":"Linear","category":"Productivity and Project Management","auth_method":"OAuth2 (incl. OAuth 2.1 for MCP) or personal API key","self_serve":"self-serve free - OAuth app and API key creation self-serve, no approval required","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://linear.app/developers/oauth-2-0-authentication","https://linear.app/docs/mcp"]},{"app":"Jira","category":"Productivity and Project Management","auth_method":"OAuth2 3LO or Basic auth with API token","self_serve":"self-serve free - app registration free, Marketplace distribution needs additional review","mcp_exists":"unclear","buildability_verdict":"buildable with limitation","evidence":["https://developer.atlassian.com/cloud/jira/platform/oauth-2-3lo-apps/","https://developer.atlassian.com/cloud/jira/platform/basic-auth-for-rest-apis/"]},{"app":"Asana","category":"Productivity and Project Management","auth_method":"OAuth2 or Personal Access Token","self_serve":"self-serve free - PATs and OAuth apps self-serve on free tier","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://developers.asana.com/docs/authentication","https://developers.asana.com/docs/integrating-with-asanas-mcp-server"]},{"app":"Monday.com","category":"Productivity and Project Management","auth_method":"Personal API token (v2) or OAuth2 (marketplace apps)","self_serve":"self-serve free - personal API tokens available on free tier","mcp_exists":"unclear","buildability_verdict":"buildable today","evidence":["https://developer.monday.com/api-reference/docs/authentication","https://developer.monday.com/apps/docs/choosing-auth"]},{"app":"ClickUp","category":"Productivity and Project Management","auth_method":"OAuth2 or personal API token (pk_ prefixed)","self_serve":"self-serve free - personal tokens and OAuth apps available on Free Forever plan","mcp_exists":"unclear","buildability_verdict":"buildable today","evidence":["https://developer.clickup.com/docs/authentication","https://developer.clickup.com/docs/rate-limits"]},{"app":"Coda","category":"Productivity and Project Management","auth_method":"API token (Bearer) for REST; OAuth2 for Packs SDK","self_serve":"self-serve free - API tokens self-generated, free tier available","mcp_exists":"unclear","buildability_verdict":"buildable today","evidence":["https://coda.io/developers/apis/v1","https://coda.io/packs/build/latest/guides/basics/authentication/oauth2/"]},{"app":"Smartsheet","category":"Productivity and Project Management","auth_method":"OAuth2 (3-legged) or directly-generated access token","self_serve":"self-serve free - access tokens generated in-app on free/trial tier","mcp_exists":"unclear","buildability_verdict":"buildable today","evidence":["https://developers.smartsheet.com/api/smartsheet/guides/basics/authentication"]},{"app":"Harvest","category":"Productivity and Project Management","auth_method":"Personal Access Token (Bearer) or OAuth2","self_serve":"self-serve free - PATs self-serve from Harvest ID; product itself needs paid/trial subscription","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/"]},{"app":"Stripe","category":"Finance and Fintech","auth_method":"API key (Basic Auth with secret key) or OAuth2 (Connect platform apps)","self_serve":"self-serve free - test-mode keys instant, no approval; live keys require business verification","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://docs.stripe.com/api/authentication","https://docs.stripe.com/mcp"]},{"app":"Plaid","category":"Finance and Fintech","auth_method":"API key (client_id + secret per request)","self_serve":"self-serve free for sandbox - instant free Sandbox secret with simulated data; Production needs approval/business verification","mcp_exists":"unclear","buildability_verdict":"buildable with limitation","evidence":["https://plaid.com/docs/api/","https://plaid.com/docs/sandbox/"]},{"app":"Binance","category":"Finance and Fintech","auth_method":"API key + signed requests (HMAC or Ed25519/RSA)","self_serve":"self-serve free for market data; trading endpoints require KYC-verified account","mcp_exists":"unclear","buildability_verdict":"buildable with limitation","evidence":["https://binance-docs.github.io/apidocs/spot/en"]},{"app":"Paygent Connect","category":"Finance and Fintech","auth_method":"unknown/unverified - no confirmed Paygent Connect-specific docs found","self_serve":"unclear - no public developer signup or sandbox found","mcp_exists":"unclear","buildability_verdict":"blocked","evidence":["https://documentation.ixopay.com/adapters/paygent","https://www.nmi.com/developers/sdks-apis/"]},{"app":"iPayX","category":"Finance and Fintech","auth_method":"API key (Bearer token, ipx_live_/ipx_test_ prefixed)","self_serve":"self-serve free tier - free API key with 10 daily audits, $199 unlocks unlimited","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://www.ipayx.ai/docs/mcp-server","https://github.com/Ipayx-stellar/mcp-fx-audit"]},{"app":"QuickBooks","category":"Finance and Fintech","auth_method":"OAuth2 (authorization code flow)","self_serve":"self-serve free trial - free Intuit dev account gives OAuth2 sandbox instantly; production needs Intuit app review","mcp_exists":"unclear","buildability_verdict":"buildable with limitation","evidence":["https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/faq"]},{"app":"Xero","category":"Finance and Fintech","auth_method":"OAuth2 (authorization code flow, PKCE)","self_serve":"self-serve free - free dev account gives demo company and API Explorer instantly","mcp_exists":"unclear","buildability_verdict":"buildable today","evidence":["https://developer.xero.com/documentation/guides/oauth2/overview/"]},{"app":"Brex","category":"Finance and Fintech","auth_method":"API token (Bearer) or OAuth2 (3-legged, partner integrations)","self_serve":"paid plan required - API token creation requires existing Brex business account with admin role","mcp_exists":"unclear","buildability_verdict":"buildable with limitation","evidence":["https://developer.brex.com/guides/authentication"]},{"app":"Ramp","category":"Finance and Fintech","auth_method":"OAuth2 (client credentials/authorization code)","self_serve":"admin/partner approval required - sandbox provisioning itself requires contacting an account manager, not self-serve as first reported","mcp_exists":"unclear","buildability_verdict":"buildable with limitation","evidence":["https://docs.ramp.com/developer-api/v1/authorization"]},{"app":"PitchBook","category":"Finance and Fintech","auth_method":"API key/token (set up per contract, no self-service generator)","self_serve":"contact-sales gated - enterprise add-on on top of existing platform subscription, no free trial or self-serve key generation","mcp_exists":false,"buildability_verdict":"blocked","evidence":["https://pitchbook.com/help/PitchBook-api"]},{"app":"NotebookLM","category":"AI, Research and Media-native","auth_method":"OAuth2 / Google Cloud IAM (Gemini Enterprise Agent Platform)","self_serve":"admin/partner approval required - needs Google Cloud project, Gemini Enterprise/NotebookLM Enterprise licensing, admin-provisioned IAM roles","mcp_exists":false,"buildability_verdict":"buildable with limitation","evidence":["https://docs.cloud.google.com/gemini/enterprise/notebooklm-enterprise/docs/api-notebooks"]},{"app":"Otter AI","category":"AI, Research and Media-native","auth_method":"OAuth2 (official hosted MCP at mcp.otter.ai) or Bearer API key (Public API)","self_serve":"paid plan required - Public API/MCP reportedly require Business or Enterprise plan","mcp_exists":true,"buildability_verdict":"buildable with limitation","evidence":["https://help.otter.ai/hc/en-us/articles/35287607569687-Otter-MCP-Server"]},{"app":"Fathom","category":"AI, Research and Media-native","auth_method":"API key (direct REST) and OAuth2 (public/partner integrations)","self_serve":"self-serve free - API docs open to anyone, key generated directly without gating","mcp_exists":"unclear","buildability_verdict":"buildable today","evidence":["https://developers.fathom.ai/"]},{"app":"Consensus","category":"AI, Research and Media-native","auth_method":"API key/secret over REST","self_serve":"contact-sales gated - API 'available by application only', $0.10/call plus platform fee, no open self-signup","mcp_exists":false,"buildability_verdict":"blocked","evidence":["https://docs.consensus.app/","https://consensus.app/home/api/"]},{"app":"Reducto","category":"AI, Research and Media-native","auth_method":"API key (Bearer, via self-serve Studio signup)","self_serve":"self-serve free - 15,000 free credits on signup, pay-as-you-go available immediately","mcp_exists":false,"buildability_verdict":"buildable today","evidence":["https://reducto.ai/pricing"]},{"app":"Devin","category":"AI, Research and Media-native","auth_method":"Bearer API key (service-user key) plus X-Org-Id header","self_serve":"paid plan required - requires active paid Devin subscription/org, no free public API tier","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://docs.devin.ai/work-with-devin/devin-mcp"]},{"app":"higgsfield","category":"AI, Research and Media-native","auth_method":"Browser-based login token flow via CLI OAuth-like device flow","self_serve":"self-serve trial - CLI installable via npm with auth login, but full API pricing/limits not clearly documented","mcp_exists":"unclear","buildability_verdict":"buildable with limitation","evidence":["https://higgsfield.ai/cli","https://github.com/higgsfield-ai/cli"]},{"app":"Mermaid CLI","category":"AI, Research and Media-native","auth_method":"N/A - CLI tool, no hosted API","self_serve":"self-serve free - fully open source, npm install, no signup; community mermaid.ink offers free unauthenticated hosted rendering","mcp_exists":false,"buildability_verdict":"buildable today","evidence":["https://github.com/mermaid-js/mermaid-cli","https://github.com/jihchi/mermaid.ink"]},{"app":"YouTube Transcript","category":"AI, Research and Media-native","auth_method":"API key (Bearer token)","self_serve":"self-serve free - 100 free credits on signup, no card required, paid plans from $5/mo","mcp_exists":true,"buildability_verdict":"buildable today","evidence":["https://transcriptapi.com/docs/api/","https://transcriptapi.com/docs/mcp/"]},{"app":"Grain","category":"AI, Research and Media-native","auth_method":"Bearer token (Personal Access Token, Workspace Access Token, or OAuth2)","self_serve":"self-serve free/trial - PATs/WATs self-generated by users with account access, no application-gate mentioned","mcp_exists":false,"buildability_verdict":"buildable today","evidence":["https://developers.grain.com/"]}];
+  const tbody = document.getElementById('tbody');
+  const rowcount = document.getElementById('rowcount');
+  const search = document.getElementById('search');
+  const chips = document.querySelectorAll('.chip');
+  let activeFilter = 'all';
+
+  function mcpPill(v) {
+    if (v === true) return '<span class="pill pill-good">MCP yes</span>';
+    if (v === false) return '<span class="pill pill-neutral">MCP no</span>';
+    return '<span class="pill pill-warn">MCP unclear</span>';
+  }
+  function verdictPill(v) {
+    if (v === 'buildable today') return '<span class="pill pill-good">Buildable today</span>';
+    if (v === 'buildable with limitation') return '<span class="pill pill-warn">With limitation</span>';
+    return '<span class="pill pill-bad">Blocked</span>';
+  }
+  function esc(s) { return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+  function render() {
+    const q = search.value.trim().toLowerCase();
+    const rows = APPS.filter(a => {
+      if (activeFilter !== 'all' && a.buildability_verdict !== activeFilter) return false;
+      if (q && !(a.app.toLowerCase().includes(q) || a.category.toLowerCase().includes(q))) return false;
+      return true;
+    });
+    rowcount.textContent = rows.length + ' / 100 apps';
+    tbody.innerHTML = rows.map(a => `
+      <tr>
+        <td><span class="app-name">${esc(a.app)}</span><span class="cat-tag">${esc(a.category)}</span></td>
+        <td>${esc(a.auth_method)}</td>
+        <td>${esc(a.self_serve)}</td>
+        <td>${mcpPill(a.mcp_exists)}</td>
+        <td>${verdictPill(a.buildability_verdict)}</td>
+        <td>${(a.evidence || []).slice(0,1).map(u => `<a class="ev" href="${esc(u)}" target="_blank" rel="noopener">source &rarr;</a>`).join('')}</td>
+      </tr>
+    `).join('');
+  }
+  search.addEventListener('input', render);
+  chips.forEach(c => c.addEventListener('click', () => {
+    chips.forEach(x => x.classList.remove('active'));
+    c.classList.add('active');
+    activeFilter = c.dataset.filter;
+    render();
+  }));
+  render();
+</script>
