@@ -96,6 +96,30 @@
   .caught-card .cf { font-family: ui-monospace, monospace; font-size: 11px; color: var(--warn); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
   .caught-card p { font-size: 12.5px; color: var(--muted); margin: 7px 0 0; }
 
+  /* ===== Access ladder ===== */
+  .ladder { display: flex; flex-direction: column; gap: 5px; margin: 4px 0 2px; }
+  .lrung {
+    display: flex; align-items: center; gap: 9px; font-size: 12.5px; color: var(--muted);
+    background: var(--surface-2); border-radius: 7px; padding: 7px 10px;
+  }
+  .lrung b { margin-left: auto; color: var(--text); font-family: ui-monospace, monospace; font-variant-numeric: tabular-nums; font-size: 13px; }
+  .lrung .lnum {
+    width: 17px; height: 17px; border-radius: 50%; background: var(--accent-soft); color: var(--accent-ink);
+    font-size: 10.5px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .lrung.is-end { background: var(--accent-soft); color: var(--accent-ink); font-weight: 700; }
+  .lrung.is-end b { color: var(--accent-ink); }
+
+  /* ===== Tier table ===== */
+  table.tiers td:first-child { white-space: nowrap; font-weight: 800; }
+  table.tiers td.cnt { font-family: ui-monospace, monospace; font-variant-numeric: tabular-nums; font-weight: 800; font-size: 15px; }
+  table.tiers td.ex { color: var(--muted); font-size: 12.5px; }
+  .mcp-caveat {
+    background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: 10px; padding: 16px 18px; font-size: 13px; color: var(--muted); margin-top: 18px; max-width: 92ch;
+  }
+  .mcp-caveat b { color: var(--text); }
+
   /* ===== Pills ===== */
   .pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 700; white-space: nowrap; }
   .pill-good { background: var(--good-soft); color: var(--good); }
@@ -187,6 +211,7 @@
 <nav class="tabs">
   <div class="wrap">
     <a href="#patterns">Patterns</a>
+    <a href="#recommendation">Build Order</a>
     <a href="#explorer">All 100 Apps</a>
     <a href="#agent">The Agent</a>
     <a href="#verification">Verification</a>
@@ -198,9 +223,11 @@
   <div class="wrap">
     <div class="section-head">
       <div>
-        <h2>The headline: two-thirds of these apps are buildable today, no outreach required</h2>
-        <p>Clustering all 100 results by auth, access gate, and buildability verdict surfaces four clear patterns
-          before you ever look at a single row.</p>
+        <h2>90 of 100 are buildable in some form. The bottleneck is access, not API availability.</h2>
+        <p><b>56 are buildable today, 34 need a workaround or approval, and 10 are genuinely blocked.</b>
+          Almost every app in this set has a real, documented API &mdash; what separates them is whether a
+          developer can actually get to it. That reframes the research question from "does an API exist?" to
+          "how far down the access ladder does this app let us walk?"</p>
       </div>
     </div>
 
@@ -228,6 +255,36 @@
 
     <div class="patterns">
       __PATTERN_CARDS__
+    </div>
+  </div>
+</section>
+
+<section id="recommendation">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <h2>What this means for Composio: a build order</h2>
+        <p>The point of the research isn't the table &mdash; it's knowing what to build next. Sorting all 100 by
+          access friction rather than by category gives five tiers, each with a different <i>kind</i> of work
+          attached. Every app lands in exactly one tier; the tiers sum to 100.</p>
+      </div>
+    </div>
+    <div class="table-scroll">
+      <table class="appdata tiers">
+        <thead>
+          <tr><th>Tier</th><th>Profile</th><th>Count</th><th>Why / what the work is</th><th>Examples</th></tr>
+        </thead>
+        <tbody>
+          __TIER_ROWS__
+        </tbody>
+      </table>
+    </div>
+    <div class="mcp-caveat">
+      <b>One caution on MCP.</b> MCP availability was the single most error-prone field in this research, and it
+      is a useful <i>ecosystem signal</i> &mdash; it says a vendor is already investing in agent access. It is not
+      a substitute for API feasibility, and it shouldn't be the primary buildability criterion. The order that
+      actually matters is: can we access the product &rarr; can we authenticate &rarr; is the API useful enough
+      &rarr; is it commercially viable &rarr; and only then, does an MCP server already exist.
     </div>
   </div>
 </section>
@@ -334,8 +391,9 @@
         <div class="big">__VERIFY_CONFIRMED__<span> / 18 fully confirmed</span></div>
         <p style="color:var(--muted); font-size:13.5px; margin-top:10px;">
           The other __VERIFY_PARTIAL__ records were <b>partially wrong</b> &mdash; never a fabricated verdict, but a
-          stale or overstated detail on one field (almost always <span class="mono">mcp_exists</span>, the field
-          most likely to change week to week). Every correction below was applied back into
+          stale or overstated detail on exactly one field. The errors clustered in two places: two corrections in
+          <span class="mono">mcp_exists</span> and two in <span class="mono">self_serve</span>, plus one in
+          <span class="mono">api_surface</span>. Every correction was applied back into
           <span class="mono">data/results.json</span>.
         </p>
         <div class="accuracy-flow">

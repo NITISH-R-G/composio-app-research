@@ -21,6 +21,41 @@ runtime present in this environment instead of a bare API key loop. A separate
 11th agent then re-verified 18 of those records from scratch, blind to the first
 pass's reasoning, to produce the accuracy numbers below.
 
+## The finding, in one line
+
+**90 of 100 are buildable in some form — 56 today, 34 with a workaround, 10 blocked.
+Almost every app has a real documented API; what separates them is access.** The
+access ladder derived from the dataset:
+
+| Rung | Test | Apps passing |
+|---|---|---|
+| 1 | A documented public API exists | 97 |
+| 2 | Auth method is known and usable | 96 |
+| 3 | A developer can self-issue credentials | 74 |
+| 4 | Shippable toolkit today | 56 |
+
+The steep drop is rung 3→4 and it is almost entirely non-technical: business
+verification, developer-token approval, sandbox provisioning, access review,
+commercial contracts. That's a sourcing/partnerships problem, not an engineering one.
+
+## Build order (what I'd actually recommend)
+
+Each app lands in exactly one tier; the tiers sum to 100.
+
+| Tier | Profile | Count | Why |
+|---|---|---|---|
+| **P0** Build first | Self-serve free + buildable today + MCP exists | 29 | Lowest integration cost; vendor already invests in agent access |
+| **P1** Fast follow | Buildable today, needs trial/paid account or has no MCP | 27 | Straightforward engineering, no outreach needed |
+| **P2** Build on demand | Real limitation (paid tier, rate limits, narrow surface) | 30 | Worth building when a customer asks |
+| **P3** Customer-led only | Enterprise contract, partner review, no self-serve path | 8 | Gate is commercial, not technical — needs a named customer |
+| **P4** Human validation first | Could not verify from public sources | 6 | Someone must sign up or contact sales before deciding |
+
+**A caution on MCP:** MCP availability is a useful *ecosystem signal*, not a
+substitute for API feasibility, and it was the most error-prone field in this
+research. The order that matters is: can we access the product → can we
+authenticate → is the API useful enough → is it commercially viable → and only
+then, does an MCP server already exist.
+
 ## Repo layout
 
 ```

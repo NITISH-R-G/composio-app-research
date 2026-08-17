@@ -83,21 +83,30 @@ const patternCards = `
       flow just to get a working integration started.</p>
   </div>
   <div class="pcard">
-    <div class="ptitle"><span class="n">02</span> Self-serve is the norm, not the exception</div>
+    <div class="ptitle"><span class="n">02</span> Self-serve is the norm &mdash; but "self-serve" hides a ladder</div>
     ${barRows(selfServeBuckets)}
-    <p style="margin-top:10px;">${selfServeFree + results.filter(r=>(r.self_serve||'').toLowerCase().includes('self-serve trial')).length} of 100 apps
-      let a developer get working credentials today with no sales conversation. The remaining ~22% cluster in
-      two categories: enterprise B2B software (DealCloud, PitchBook, Salesforce Commerce Cloud) and ad
-      platforms (Google Ads, Meta Ads, LinkedIn Ads, Pinterest) where identity/business verification is the
-      real gate, not pricing.</p>
+    <p style="margin-top:10px;"><b>${selfServeFree} of 100 are free forever</b> with credentials issued on signup. A
+      further ${results.filter(r=>(r.self_serve||'').toLowerCase().includes('self-serve trial')).length} self-signup onto a
+      <i>time-limited trial</i> &mdash; and four of those carry a second gate the pricing page doesn't mention
+      (Lark needs tenant-admin approval, Threads needs Meta App Review, Neo4j wants billing details on file,
+      Squarespace requires a paid Commerce plan). Counting those as "open access" would overstate the case.</p>
   </div>
   <div class="pcard">
-    <div class="ptitle"><span class="n">03</span> Where the friction concentrates</div>
-    ${barRows(catBlocked)}
-    <p style="margin-top:10px;">Finance/Fintech and AI/Research-native are the two categories with the most
-      "blocked" or "limited" verdicts &mdash; not because their APIs are bad, but because KYC, business
-      verification, or enterprise-only contracts sit in front of the docs. Support/Helpdesk and Developer/Infra
-      are the cleanest categories: nearly every app there is buildable today.</p>
+    <div class="ptitle"><span class="n">03</span> API availability is not the bottleneck &mdash; access is</div>
+    <div class="ladder">
+      <div class="lrung"><span class="lnum">1</span> A documented public API exists <b>97</b></div>
+      <div class="lrung"><span class="lnum">2</span> Auth method is known and usable <b>96</b></div>
+      <div class="lrung"><span class="lnum">3</span> A dev can self-issue credentials <b>74</b></div>
+      <div class="lrung is-end"><span class="lnum">4</span> Shippable toolkit today <b>56</b></div>
+    </div>
+    <p style="margin-top:12px;">The steep drop is rung 3&rarr;4, and almost none of it is technical. Stripe, Google
+      Ads, Ramp, LinkedIn Ads, PitchBook and Salesforce Commerce Cloud all ship good APIs; they fall out at
+      different rungs for business-verification, developer-token approval, sandbox provisioning, access review,
+      commercial contract, and customer/partner status respectively. That is a sourcing and partnerships
+      problem, not an engineering one &mdash; and it's the finding with the clearest action attached.</p>
+    <p style="margin-top:8px; font-size:12px; color:var(--muted-2);">Rungs derived from the dataset:
+      1 = <span class="mono">api_surface</span> is a real hosted API; 2 = <span class="mono">auth_method</span>
+      is known; 3 = <span class="mono">self_serve</span> is free or trial; 4 = verdict is "buildable today".</p>
   </div>`;
 
 // ---- Full data table JSON ----
@@ -122,6 +131,33 @@ const verifyItems = verification.map(v => {
     ${v.correction ? `<p style="color:var(--accent-ink,var(--accent));"><b>Fix applied:</b> ${esc(v.correction)}</p>` : ''}
   </div>`;
 }).join('');
+
+// ---- Build-order tiers (each app lands in exactly one; sums to 100) ----
+const isFree = x => (x.self_serve||'').toLowerCase().includes('self-serve free');
+const isToday = x => x.buildability_verdict === 'buildable today';
+const isLow = x => x.confidence === 'low';
+const T0 = results.filter(x => isToday(x) && isFree(x) && x.mcp_exists === true && !isLow(x));
+const T1 = results.filter(x => isToday(x) && !isLow(x) && !(isFree(x) && x.mcp_exists === true));
+const T2 = results.filter(x => x.buildability_verdict === 'buildable with limitation' && !isLow(x));
+const T3 = results.filter(x => x.buildability_verdict === 'blocked' && !isLow(x));
+const T4 = results.filter(isLow);
+const ex = a => a.slice(0, 4).map(x => x.app).join(', ') + (a.length > 4 ? `, +${a.length-4} more` : '');
+
+const tierDefs = [
+  ['P0', 'pill-good', 'Build first', T0, 'Self-serve free + buildable today + an MCP server already exists. Lowest integration cost and the vendor has already signalled it wants agent access.'],
+  ['P1', 'pill-good', 'Fast follow', T1, 'Buildable today, but needs a trial/paid account or has no MCP yet. Straightforward engineering, no outreach.'],
+  ['P2', 'pill-warn', 'Build on demand', T2, 'A real limitation sits in the way — paid tier, rate limits, narrow surface, or an approval for production. Worth building when a customer asks.'],
+  ['P3', 'pill-bad', 'Customer-led only', T3, 'Enterprise contract, partner review, or no self-serve path at all. Build only with a named customer pulling — the gate is commercial, not technical.'],
+  ['P4', 'pill-neutral', 'Human validation first', T4, 'The agent could not verify these from public sources. Someone needs to sign up, email sales, or open a gated portal before any build decision.'],
+];
+const tierRows = tierDefs.map(([code, pill, label, arr, why]) => `
+  <tr>
+    <td><span class="pill ${pill}">${code}</span><span class="cat-tag">${esc(label)}</span></td>
+    <td class="desc">${esc(label)}</td>
+    <td class="cnt">${arr.length}</td>
+    <td class="desc">${esc(why)}</td>
+    <td class="ex">${esc(ex(arr))}</td>
+  </tr>`).join('');
 
 // ---- Caught errors (surfaced up top, not buried) ----
 const caughtErrors = verification.filter(v => v.verdict !== 'CONFIRMED').map(v => `
@@ -150,6 +186,7 @@ tpl = tpl
   .replace(/__VERIFY_CONFIRMED__/g, String(confirmed))
   .replace(/__VERIFY_PARTIAL__/g, String(partial))
   .replace('__CAUGHT_ERRORS__', caughtErrors)
+  .replace('__TIER_ROWS__', tierRows)
   .replace('__VERIFY_ITEMS__', verifyItems)
   .replace('__LOWCONF_ROWS__', lowConfRows);
 
