@@ -130,20 +130,23 @@ const corrections = wrongs.map(v => {
   </tr>`;
 }).join('');
 
-/* ---------------- Low-confidence records ---------------- */
+/* ---------------- Low-confidence records: a human work queue ---------------- */
 const why = {
-  'Pumble': 'API documentation is hosted in a marketplace add-on rather than a developer portal, so coverage could not be confirmed.',
-  'fanbasis': 'The main developer portal requires a login, and no self-serve signup path was found.',
-  'MrScraper': 'Documentation is thin and fragmented, and pricing and free-tier limits could not be confirmed.',
-  'Waterfall.io': 'Pricing and rate limits are documented mainly by third parties rather than the vendor.',
-  'Paygent Connect': 'No public developer documentation could be located for this product.',
-  'higgsfield': 'The underlying API is documented only through the CLI, with no published pricing or limits.',
+  'Pumble': ['API documentation is hosted in a marketplace add-on rather than a developer portal, so coverage could not be confirmed.', 'Direct vendor confirmation'],
+  'fanbasis': ['The main developer portal requires a login, and no self-serve signup path was found.', 'Account access or vendor outreach'],
+  'MrScraper': ['Documentation is thin and fragmented, and pricing and free-tier limits could not be confirmed.', 'Vendor pricing confirmation'],
+  'Waterfall.io': ['Pricing and rate limits are documented mainly by third parties rather than the vendor.', 'Vendor pricing confirmation'],
+  'Paygent Connect': ['No public developer documentation could be located for this product.', 'Direct vendor outreach'],
+  'higgsfield': ['The underlying API is documented only through the CLI, with no published pricing or limits.', 'Vendor documentation request'],
 };
-const lowconf = T4.map(r => `
-  <tr>
+const lowconf = T4.map(r => {
+  const w = why[r.app] || [r.blocker, 'Direct vendor outreach'];
+  return `<tr>
     <td class="strong">${esc(r.app)}</td>
-    <td>${esc(why[r.app] || r.blocker)}</td>
-  </tr>`).join('');
+    <td>${esc(w[0])}</td>
+    <td>${esc(w[1])}</td>
+  </tr>`;
+}).join('');
 
 /* ---------------- Assemble ---------------- */
 tpl = tpl

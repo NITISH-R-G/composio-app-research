@@ -66,8 +66,7 @@
   .wrap  { max-width: 1120px; margin: 0 auto; padding: 0 32px; }
   .prose { max-width: 720px; }
 
-  /* Sections */
-  /* 40px above the divider + 40px below = 80px between sections */
+  /* Sections: 40px above the divider + 40px below = 80px between sections */
   section { padding: 40px 0 0; }
   section:last-of-type { padding-bottom: 8px; }
   .rule { border: 0; border-top: 1px solid var(--rule-soft); margin: 40px 0 0; }
@@ -78,6 +77,7 @@
   }
   h2 { font-size: 24px; margin-bottom: 16px; }
   .intro { font-size: 16px; color: var(--ink-2); margin-bottom: 28px; }
+  .jump { font-size: 13px; margin-left: 10px; }
 
   /* Header */
   header { padding: 56px 0 0; }
@@ -85,26 +85,30 @@
     font-size: 12px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase;
     color: var(--ink-3); line-height: 1.8; margin-bottom: 24px;
   }
-  h1 { font-size: clamp(30px, 4.4vw, 46px); letter-spacing: -0.025em; max-width: 18ch; }
-  .summary { font-size: 18px; color: var(--ink-2); margin-top: 24px; line-height: 1.6; }
-  .headline {
-    font-size: 19px; font-weight: 600; letter-spacing: -0.012em; line-height: 1.45;
-    margin-top: 8px; padding-top: 20px; border-top: 1px solid var(--rule-soft);
-  }
-  .toc { margin-top: 28px; font-size: 14px; color: var(--ink-3); }
+  h1 { font-size: clamp(30px, 4.4vw, 46px); letter-spacing: -0.025em; max-width: 20ch; }
+  .summary { font-size: 18px; color: var(--ink-2); margin-top: 20px; line-height: 1.6; max-width: 42em; }
+  .toc { margin-top: 24px; font-size: 14px; color: var(--ink-3); }
   .toc a { color: var(--ink-2); }
   .toc a + a::before { content: "·"; margin: 0 10px; color: var(--rule); }
   .stamp { margin-top: 16px; font-size: 13px; color: var(--ink-3); max-width: 48em; }
 
+  /* Briefing: the decision surface */
+  dl.brief { margin: 32px 0 0; border-top: 1px solid var(--rule-soft); }
+  .brow { display: grid; grid-template-columns: 140px 1fr; gap: 24px; padding: 18px 0; border-bottom: 1px solid var(--rule-soft); align-items: baseline; }
+  .brow dt { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-3); }
+  .brow dd { margin: 0; font-size: 16px; color: var(--ink); }
+  .brow dd b { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .brow dd .sub { color: var(--ink-2); font-weight: 400; }
+
   /* Findings */
-  .finding { padding: 24px 0; border-top: 1px solid var(--rule-soft); }
+  .finding { padding: 22px 0; border-top: 1px solid var(--rule-soft); }
   .finding:first-of-type { border-top: none; padding-top: 0; }
   .finding .fnum {
     font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
     color: var(--ink-3); margin-bottom: 8px;
   }
-  .finding .fclaim { font-size: 20px; font-weight: 600; letter-spacing: -0.015em; line-height: 1.35; max-width: 30em; }
-  .finding .fdetail { font-size: 16px; color: var(--ink-2); margin-top: 8px; max-width: 42em; }
+  .finding .fclaim { font-size: 19px; font-weight: 600; letter-spacing: -0.012em; line-height: 1.35; max-width: 34em; }
+  .finding .fdetail { font-size: 15px; color: var(--ink-2); margin-top: 8px; max-width: 42em; }
 
   /* Tables */
   .tscroll { overflow-x: auto; }
@@ -120,12 +124,10 @@
   tbody td .sub { display: block; font-size: 13px; color: var(--ink-3); font-weight: 400; margin-top: 3px; }
   td.n { font-variant-numeric: tabular-nums; white-space: nowrap; }
 
-  /* Tier table */
   table.tiers td { padding-top: 18px; padding-bottom: 18px; }
   table.tiers td.tier { color: var(--ink); font-weight: 600; white-space: nowrap; }
   table.tiers td.eg { font-size: 14px; color: var(--ink-3); }
 
-  /* Dataset */
   #dataset table { font-size: 14px; min-width: 1040px; }
   #dataset tbody tr:nth-child(even) td { background: var(--row-alt); }
   .tools { display: flex; align-items: baseline; gap: 24px; flex-wrap: wrap; margin-bottom: 20px; }
@@ -143,13 +145,25 @@
   .tools button[aria-pressed="true"] { color: var(--ink); border-bottom-color: var(--ink); }
   .tools .rc { margin-left: auto; font-size: 13px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
 
-  /* Method list */
-  ol.method { margin: 0; padding-left: 22px; font-size: 16px; color: var(--ink-2); }
-  ol.method li { margin-bottom: 10px; padding-left: 4px; }
-  ol.method li strong { color: var(--ink); font-weight: 600; }
+  /* Number chain: shows a value narrowing across stricter tests */
+  .chain { display: flex; align-items: flex-end; gap: 0; flex-wrap: wrap; margin: 8px 0 4px; }
+  .chain .cstep { display: flex; flex-direction: column; align-items: center; min-width: 76px; }
+  .chain .cv { font-size: 30px; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; line-height: 1; }
+  .chain .ck { font-size: 12px; color: var(--ink-3); margin-top: 6px; text-align: center; max-width: 12ch; }
+  .chain .carrow { color: var(--ink-3); font-size: 18px; padding: 0 10px 22px; }
 
-  /* Verification figures */
-  dl.figures { margin: 0 0 28px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px 28px; }
+  /* Pipeline stage list */
+  .stages { border-top: 1px solid var(--rule-soft); margin-top: 8px; }
+  .stage { display: grid; grid-template-columns: 130px 1fr; gap: 24px; padding: 18px 0; border-bottom: 1px solid var(--rule-soft); align-items: baseline; }
+  .stage .sname { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink); }
+  .stage .sdetail { font-size: 15px; color: var(--ink-2); }
+  .stage .sdetail b { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  /* Method detail (collapsed under the stage list) */
+  ol.method { margin: 24px 0 0; padding-left: 22px; font-size: 14px; color: var(--ink-3); }
+  ol.method li { margin-bottom: 8px; padding-left: 4px; }
+
+  dl.figures { margin: 0 0 8px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px 28px; }
   dl.figures div { border-top: 1px solid var(--rule-soft); padding-top: 12px; }
   dl.figures dt { font-size: 13px; color: var(--ink-3); }
   dl.figures dd { margin: 4px 0 0; font-size: 26px; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
@@ -177,7 +191,11 @@
     section { padding-top: 32px; }
     .rule { margin-top: 32px; }
     header { padding-top: 36px; }
+    .brow, .stage { grid-template-columns: 1fr; gap: 6px; }
     dl.figures { grid-template-columns: repeat(2, 1fr); }
+    .chain { gap: 4px 0; }
+    .chain .carrow { display: none; }
+    .chain .cstep { min-width: 30%; }
   }
 </style>
 
@@ -185,23 +203,30 @@
   <div class="wrap">
     <div class="docmeta">Composio<br />App toolkit feasibility audit</div>
     <h1>100-app toolkit feasibility audit</h1>
-    <p class="summary prose">We researched 100 apps across 10 categories to determine whether Composio could
-      build an agent toolkit for each one. The research covered authentication, credential access, API
-      surface, MCP availability, and buildability.</p>
+    <p class="summary">Whether Composio can build an agent toolkit for each of 100 apps today, and where it
+      cannot, what specifically blocks it.</p>
 
-    <dl class="figures" style="margin-top:32px;">
-      <div><dt>Apps researched</dt><dd class="num">100</dd></div>
-      <div><dt>Buildable in some form</dt><dd class="num">90</dd></div>
-      <div><dt>Immediately shippable</dt><dd class="num">56</dd></div>
-      <div><dt>Independently re-researched</dt><dd class="num">18</dd></div>
-      <div><dt>Errors caught and corrected</dt><dd class="num">5</dd></div>
+    <dl class="brief">
+      <div class="brow">
+        <dt>Dataset</dt>
+        <dd><b>100</b> apps <span class="sub">across</span> <b>10</b> categories</dd>
+      </div>
+      <div class="brow">
+        <dt>Result</dt>
+        <dd><b>90 / 100</b> buildable in some form <span class="sub">(56 today, 34 with a limitation, 10 blocked)</span></dd>
+      </div>
+      <div class="brow">
+        <dt>Access</dt>
+        <dd><b>97</b> documented public APIs <span class="sub">&middot;</span> <b>74</b> self-issued credentials <span class="sub">&middot;</span> <b>56</b> shippable today</dd>
+      </div>
+      <div class="brow">
+        <dt>Verification</dt>
+        <dd><b>18</b> apps independently re-researched <span class="sub">&middot;</span> <b>72</b> fields checked <span class="sub">&middot;</span> <b>5</b> corrections</dd>
+      </div>
     </dl>
 
-    <p class="headline prose">97 apps have a documented public API. 74 provide self-issued credentials.
-      56 can be built without a business relationship. Credential access is where the drop happens.</p>
-
-    <nav class="toc">
-      <a href="#recommendation">Recommendation</a><a href="#dataset">Dataset</a><a href="#pipeline">Research pipeline</a><a href="#verification">Verification</a><a href="#review">Human review</a>
+    <nav class="toc" aria-label="Section links">
+      <a href="#findings">Findings</a><a href="#recommendation">Recommendation</a><a href="#access">Access</a><a href="#dataset">Dataset</a><a href="#pipeline">Pipeline</a><a href="#verification">Verification</a><a href="#review">Human review</a>
     </nav>
     <p class="stamp">Researched August 2026. Access conditions, pricing, and MCP availability change; treat this
       as a dated snapshot rather than a standing fact table.</p>
@@ -210,6 +235,8 @@
 
 <hr class="rule" />
 
+<main>
+
 <section id="findings">
   <div class="wrap">
     <div class="label">Key findings</div>
@@ -217,19 +244,24 @@
     <div class="finding">
       <div class="fnum">Finding 01</div>
       <p class="fclaim">90 of 100 apps are buildable in some form.</p>
-      <p class="fdetail">56 are buildable today, 34 have a limitation, and 10 are blocked.</p>
+      <p class="fdetail">56 buildable today, 34 buildable with limitation, 10 blocked.
+        <a class="jump" href="#recommendation">See recommendation &rarr;</a></p>
     </div>
 
     <div class="finding">
       <div class="fnum">Finding 02</div>
-      <p class="fclaim">97 apps have a documented public API. 74 let a developer obtain credentials without
-        contacting sales. 56 are immediately shippable.</p>
+      <p class="fclaim">97 apps have a documented public API. 74 provide self-issued credentials. 56 are
+        immediately shippable.</p>
+      <p class="fdetail">Credential access, not API existence, is where the count narrows most.
+        <a class="jump" href="#access">See access &rarr;</a></p>
     </div>
 
     <div class="finding">
       <div class="fnum">Finding 03</div>
-      <p class="fclaim">Five corrections came out of the 18-app independent re-research sample, two on MCP
-        status and two on access conditions.</p>
+      <p class="fclaim">The independent sample changed five records: two on MCP status, two on access
+        conditions, one on API surface.</p>
+      <p class="fdetail">18 apps re-researched, 72 fields compared.
+        <a class="jump" href="#verification">See verification &rarr;</a></p>
     </div>
   </div>
 </section>
@@ -240,12 +272,12 @@
   <div class="wrap">
     <div class="label">Recommendation</div>
     <h2>What should Composio build first?</h2>
-    <p class="intro prose">Sorted by how hard it is to get access, rather than by category. Every app falls into
-      exactly one tier, and the tiers add up to 100.</p>
+    <p class="intro prose">Sorted by how hard each app is to access. Every app falls into exactly one tier;
+      the tiers add up to 100.</p>
     <div class="tscroll">
       <table class="tiers">
         <thead>
-          <tr><th>Tier</th><th>Apps</th><th>Why</th><th>Examples</th></tr>
+          <tr><th scope="col">Tier</th><th scope="col">Apps</th><th scope="col">Why</th><th scope="col">Examples</th></tr>
         </thead>
         <tbody>
           
@@ -282,12 +314,10 @@
         </tbody>
       </table>
     </div>
-    <p class="note" style="margin-top:24px;"><strong>This ranks integration difficulty, not product priority.</strong>
-      Customer demand, revenue, and strategic value sit on top of this and aren't in the data. A widely
-      requested app in P2 can outrank a frictionless one in P0.</p>
-    <p class="footnote">MCP availability only separates P0 from P1. A vendor with an MCP server has signaled
-      it wants agent access, but authentication, plan limits, permissions, and tool coverage still decide
-      whether the integration works, so MCP status alone doesn't determine buildability.</p>
+    <p class="footnote">Ranking reflects integration access and buildability, not product demand or revenue,
+      which aren't in this dataset. MCP availability only separates P0 from P1: it signals a vendor already
+      supports agent access, but authentication, plan limits, and permissions still decide whether the
+      integration works.</p>
   </div>
 </section>
 
@@ -297,12 +327,24 @@
   <div class="wrap">
     <div class="label">Access</div>
     <h2>Why are some apps blocked?</h2>
-    <p class="intro prose">Each measure below is a stricter test than the one above it, applied to the same
-      100 apps.</p>
-    <div class="tscroll">
+    <p class="intro prose">Each measure is a stricter test than the one before it, applied to the same 100 apps.</p>
+
+    <div class="chain">
+      <div class="cstep"><div class="cv">100</div><div class="ck">Apps researched</div></div>
+      <div class="carrow">&rarr;</div>
+      <div class="cstep"><div class="cv">97</div><div class="ck">Documented public API</div></div>
+      <div class="carrow">&rarr;</div>
+      <div class="cstep"><div class="cv">96</div><div class="ck">Known usable auth</div></div>
+      <div class="carrow">&rarr;</div>
+      <div class="cstep"><div class="cv">74</div><div class="ck">Self-issued credentials</div></div>
+      <div class="carrow">&rarr;</div>
+      <div class="cstep"><div class="cv">56</div><div class="ck">Shippable today</div></div>
+    </div>
+
+    <div class="tscroll" style="margin-top:28px;">
       <table>
         <thead>
-          <tr><th>Measure</th><th>Apps</th><th>What it means</th></tr>
+          <tr><th scope="col">Measure</th><th scope="col">Apps</th><th scope="col">What it means</th></tr>
         </thead>
         <tbody>
           
@@ -330,7 +372,7 @@
       </table>
     </div>
     <p class="note" style="margin-top:24px;">The biggest drop is between credential access and immediate
-      buildability, 18 apps. Business verification, developer-token approval, sandbox provisioning, access
+      buildability: 18 apps. Business verification, developer-token approval, sandbox provisioning, access
       review, and commercial contracts account for it. None of it is about the API itself.</p>
     <p class="footnote">Measures derived from the dataset fields <span class="ident">api_surface</span>,
       <span class="ident">auth_method</span>, <span class="ident">self_serve</span>, and
@@ -344,13 +386,13 @@
   <div class="wrap">
     <div class="label">Dataset</div>
     <h2>What did we research?</h2>
-    <p class="intro prose">All 100 apps, with the evidence URL the research agent used for each.</p>
+    <p class="intro prose">All 100 apps, with the evidence URL used for each.</p>
     <div class="tools">
       <input type="search" id="q" placeholder="Search apps" aria-label="Search apps" />
       <div class="fset" role="group" aria-label="Filter by buildability">
         <button data-f="all" aria-pressed="true">All</button>
         <button data-f="buildable today" aria-pressed="false">Buildable today</button>
-        <button data-f="buildable with limitation" aria-pressed="false">Limitation</button>
+        <button data-f="buildable with limitation" aria-pressed="false">With limitation</button>
         <button data-f="blocked" aria-pressed="false">Blocked</button>
       </div>
       <span class="rc" id="rc">100 apps</span>
@@ -358,7 +400,7 @@
     <div class="tscroll">
       <table>
         <thead>
-          <tr><th>App</th><th>Category</th><th>Auth</th><th>Credential access</th><th>API / MCP</th><th>Buildability</th><th>Evidence</th></tr>
+          <tr><th scope="col">App</th><th scope="col">Category</th><th scope="col">Auth</th><th scope="col">Credential access</th><th scope="col">API / MCP</th><th scope="col">Buildability</th><th scope="col">Evidence</th></tr>
         </thead>
         <tbody id="tb">
           <tr data-verdict="buildable today" data-search="salesforce crm and sales">
@@ -1273,28 +1315,30 @@
   <div class="wrap">
     <div class="label">Research pipeline</div>
     <h2>How was the research done?</h2>
-    <p class="intro prose">Takes a list of apps, researches each one against live documentation, produces
-      structured records with evidence, and runs an independent verification pass over a sample. The 100-app
-      list is one input; swap <span class="ident">data/apps.json</span> to point it at a different set.</p>
+    <p class="intro prose">Takes a list of apps, researches each against live documentation, produces
+      structured records with evidence, and independently re-researches a sample. The 100-app list is one
+      input; swap <span class="ident">data/apps.json</span> to point it at a different set.</p>
+
+    <div class="stages">
+      <div class="stage"><div class="sname">Input</div><div class="sdetail"><b>100</b> apps, <b>10</b> categories: <span class="ident">data/apps.json</span></div></div>
+      <div class="stage"><div class="sname">Research</div><div class="sdetail"><b>10</b> parallel category workers, each searching developer docs, auth pages, pricing/access pages, and MCP references</div></div>
+      <div class="stage"><div class="sname">Structure</div><div class="sdetail"><b>100</b> schema-constrained records: <span class="ident">data/results.json</span></div></div>
+      <div class="stage"><div class="sname">Verify</div><div class="sdetail"><b>18</b>-app independent sample, <b>72</b> field comparisons, no access to the first pass's answers</div></div>
+      <div class="stage"><div class="sname">Correct</div><div class="sdetail"><b>5</b> source-checked corrections merged back into the dataset</div></div>
+      <div class="stage"><div class="sname">Output</div><div class="sdetail"><span class="ident">results.json</span> + <span class="ident">verification.json</span></div></div>
+    </div>
+
     <ol class="method prose">
-      <li><strong>10 category batches.</strong> The 100-app list split by category. A failed batch can be rerun without touching the other nine.</li>
-      <li><strong>10 research workers, run in parallel.</strong> Each searched developer documentation, authentication pages, pricing and access pages, and MCP references, then filled a fixed schema. A worker that couldn't establish an answer returned low confidence instead of guessing.</li>
-      <li><strong>100 structured records,</strong> validated against the schema and merged into <span class="ident">data/results.json</span>.</li>
-      <li><strong>Independent re-research of 18 apps</strong> by a separate worker with no access to the first pass's answers.</li>
-      <li><strong>Field-by-field comparison</strong> on four decision-relevant fields per app: 72 checks.</li>
-      <li><strong>Corrections merged</strong> back into the dataset after checking against sources.</li>
+      <li>Each category batch can be rerun on its own without touching the other nine.</li>
+      <li>A worker that can't establish an answer returns low confidence instead of guessing.</li>
+      <li>Every record supplies <span class="ident">auth_method</span>, <span class="ident">self_serve</span>,
+        <span class="ident">api_surface</span>, <span class="ident">mcp_exists</span>,
+        <span class="ident">buildability_verdict</span>, <span class="ident">evidence</span>, and
+        <span class="ident">confidence</span>. The prompt requires a source URL for every claim; output that
+        fails to parse against these keys is retried once, then recorded as a parse error.</li>
     </ol>
 
-    <p class="note" style="margin-top:28px;">Each record must supply
-      <span class="ident">auth_method</span>, <span class="ident">self_serve</span>,
-      <span class="ident">api_surface</span>, <span class="ident">mcp_exists</span>,
-      <span class="ident">buildability_verdict</span>, <span class="ident">evidence</span>, and
-      <span class="ident">confidence</span>. The prompt requires a source URL for every claim; output that
-      doesn't parse as valid JSON against these keys is retried once, then recorded as a parse error.</p>
-
     <h2 style="margin-top:44px;">Run it yourself</h2>
-    <p class="intro prose">The pipeline runs against any app list. These are the actual commands, from the
-      repository root.</p>
     <pre class="cmd"><code>pip install -r requirements.txt
 export ANTHROPIC_API_KEY=sk-ant-...
 
@@ -1306,9 +1350,9 @@ python agent/research.py --input data/apps.json --output data/results.json
 
 # independent verification pass over a random sample
 python agent/verify.py --input data/results.json --sample 20 --output data/verification.json</code></pre>
-    <p class="footnote"><a href="https://github.com/NITISH-R-G/composio-app-research/blob/master/agent/research.py" target="_blank" rel="noopener">View research agent source</a> ·
-      <a href="https://github.com/NITISH-R-G/composio-app-research/blob/master/agent/verify.py" target="_blank" rel="noopener">View verification source</a> ·
-      <a href="https://github.com/NITISH-R-G/composio-app-research/blob/master/agent/schema.py" target="_blank" rel="noopener">View schema</a></p>
+    <p class="footnote"><a href="https://github.com/NITISH-R-G/composio-app-research/blob/master/agent/research.py" target="_blank" rel="noopener">Research agent source</a> ·
+      <a href="https://github.com/NITISH-R-G/composio-app-research/blob/master/agent/verify.py" target="_blank" rel="noopener">Verification source</a> ·
+      <a href="https://github.com/NITISH-R-G/composio-app-research/blob/master/agent/schema.py" target="_blank" rel="noopener">Schema</a></p>
   </div>
 </section>
 
@@ -1318,24 +1362,31 @@ python agent/verify.py --input data/results.json --sample 20 --output data/verif
   <div class="wrap">
     <div class="label">Verification</div>
     <h2>How much of this was verified?</h2>
-    <dl class="figures">
-      <div><dt>Apps re-researched</dt><dd class="num">18 / 100</dd></div>
-      <div><dt>Fields checked</dt><dd class="num">72</dd></div>
-      <div><dt>Matched on first pass</dt><dd class="num">67</dd></div>
-      <div><dt>Required correction</dt><dd class="num">5</dd></div>
-      <div><dt>Accuracy after corrections</dt><dd class="num">93% &rarr; 100%</dd></div>
-    </dl>
-    <p class="note"><strong>This does not mean all 100 records were independently verified.</strong> The
-      remaining 82 records retain their first-pass confidence ratings. The second pass re-researched each
-      sampled app independently rather than hand-checking every claim against first-party documentation, so
-      some corrections rest on credible secondary sources. Each is linked in
-      <span class="ident">data/verification.json</span>.</p>
+
+    <div class="chain">
+      <div class="cstep"><div class="cv">18</div><div class="ck">Apps sampled</div></div>
+      <div class="carrow">&rarr;</div>
+      <div class="cstep"><div class="cv">4</div><div class="ck">Fields per app</div></div>
+      <div class="carrow">&rarr;</div>
+      <div class="cstep"><div class="cv">72</div><div class="ck">Comparisons</div></div>
+      <div class="carrow">&rarr;</div>
+      <div class="cstep"><div class="cv">67</div><div class="ck">Matched</div></div>
+      <div class="carrow">&rarr;</div>
+      <div class="cstep"><div class="cv">5</div><div class="ck">Corrections</div></div>
+    </div>
+
+    <p class="note" style="margin-top:28px;"><strong>This does not mean all 100 records were independently
+      verified.</strong> The remaining 82 retain only their first-pass confidence rating. The second pass
+      re-researched each sampled app independently rather than hand-checking every claim against first-party
+      documentation, so some corrections rest on credible secondary sources, each linked in
+      <a href="https://github.com/NITISH-R-G/composio-app-research/blob/master/data/verification.json" target="_blank" rel="noopener"><span class="ident">data/verification.json</span></a>.</p>
 
     <h2 style="margin-top:44px;">What the second pass caught</h2>
+    <p class="note" style="margin-bottom:16px;">First pass &rarr; independent re-research &rarr; mismatch &rarr; source check &rarr; correction.</p>
     <div class="tscroll">
       <table>
         <thead>
-          <tr><th>App</th><th>Field</th><th>First-pass issue</th><th>Correction</th></tr>
+          <tr><th scope="col">App</th><th scope="col">Field</th><th scope="col">First-pass issue</th><th scope="col">Correction</th></tr>
         </thead>
         <tbody>
           <tr>
@@ -1376,43 +1427,44 @@ python agent/verify.py --input data/results.json --sample 20 --output data/verif
   <div class="wrap">
     <div class="label">Human review</div>
     <h2>What still needs human review?</h2>
-    <p class="intro prose">6 records have low confidence.</p>
+    <p class="intro prose">6 records need human confirmation. Public web evidence wasn't enough to establish a
+      reliable answer for these.</p>
     <div class="tscroll">
       <table>
-        <thead><tr><th>App</th><th>Why it could not be confirmed</th></tr></thead>
+        <thead><tr><th scope="col">App</th><th scope="col">Issue</th><th scope="col">What would resolve it</th></tr></thead>
         <tbody>
-          
-  <tr>
+          <tr>
     <td class="strong">Pumble</td>
     <td>API documentation is hosted in a marketplace add-on rather than a developer portal, so coverage could not be confirmed.</td>
-  </tr>
-  <tr>
+    <td>Direct vendor confirmation</td>
+  </tr><tr>
     <td class="strong">fanbasis</td>
     <td>The main developer portal requires a login, and no self-serve signup path was found.</td>
-  </tr>
-  <tr>
+    <td>Account access or vendor outreach</td>
+  </tr><tr>
     <td class="strong">MrScraper</td>
     <td>Documentation is thin and fragmented, and pricing and free-tier limits could not be confirmed.</td>
-  </tr>
-  <tr>
+    <td>Vendor pricing confirmation</td>
+  </tr><tr>
     <td class="strong">Waterfall.io</td>
     <td>Pricing and rate limits are documented mainly by third parties rather than the vendor.</td>
-  </tr>
-  <tr>
+    <td>Vendor pricing confirmation</td>
+  </tr><tr>
     <td class="strong">Paygent Connect</td>
     <td>No public developer documentation could be located for this product.</td>
-  </tr>
-  <tr>
+    <td>Direct vendor outreach</td>
+  </tr><tr>
     <td class="strong">higgsfield</td>
     <td>The underlying API is documented only through the CLI, with no published pricing or limits.</td>
+    <td>Vendor documentation request</td>
   </tr>
         </tbody>
       </table>
     </div>
-    <p class="note" style="margin-top:24px;">Public web evidence wasn't enough to establish a reliable answer
-      for these six. Confirming them needs account access, direct outreach, or a gated developer portal.</p>
   </div>
 </section>
+
+</main>
 
 <footer>
   <div class="wrap">
