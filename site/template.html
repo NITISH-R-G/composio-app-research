@@ -226,7 +226,7 @@
     </dl>
 
     <nav class="toc" aria-label="Section links">
-      <a href="#findings">Findings</a><a href="#recommendation">Recommendation</a><a href="#access">Access</a><a href="#dataset">Dataset</a><a href="#pipeline">Pipeline</a><a href="#verification">Verification</a><a href="#review">Human review</a>
+      <a href="#findings">Findings</a><a href="#recommendation">Recommendation</a><a href="#verification">Verification</a><a href="#review">Human review</a><a href="#pipeline">Pipeline</a><a href="#dataset">Dataset</a>
     </nav>
     <p class="stamp">Researched August 2026. Access conditions, pricing, and MCP availability change; treat this
       as a dated snapshot rather than a standing fact table.</p>
@@ -243,17 +243,26 @@
 
     <div class="finding">
       <div class="fnum">Finding 01</div>
-      <p class="fclaim">90 of 100 apps are buildable in some form.</p>
-      <p class="fdetail">56 buildable today, 34 buildable with limitation, 10 blocked.
-        <a class="jump" href="#recommendation">See recommendation &rarr;</a></p>
+      <p class="fclaim">90 / 100 can be built in some form.</p>
+      <p class="fdetail">56 buildable today, 34 buildable with limitation, 10 blocked.</p>
     </div>
 
     <div class="finding">
       <div class="fnum">Finding 02</div>
-      <p class="fclaim">97 apps have a documented public API. 74 provide self-issued credentials. 56 are
-        immediately shippable.</p>
-      <p class="fdetail">Credential access, not API existence, is where the count narrows most.
-        <a class="jump" href="#access">See access &rarr;</a></p>
+      <p class="fclaim">56 / 100 can be shipped immediately.</p>
+      <p class="fdetail">Credential access narrows the count more than whether an API exists.
+        <a class="jump" href="#dataset">Measures &rarr;</a></p>
+      <div class="chain">
+        <div class="cstep"><div class="cv">100</div><div class="ck">Apps researched</div></div>
+        <div class="carrow">&rarr;</div>
+        <div class="cstep"><div class="cv">97</div><div class="ck">Documented public API</div></div>
+        <div class="carrow">&rarr;</div>
+        <div class="cstep"><div class="cv">96</div><div class="ck">Known usable auth</div></div>
+        <div class="carrow">&rarr;</div>
+        <div class="cstep"><div class="cv">74</div><div class="ck">Self-issued credentials</div></div>
+        <div class="carrow">&rarr;</div>
+        <div class="cstep"><div class="cv">56</div><div class="ck">Shippable today</div></div>
+      </div>
     </div>
 
     <div class="finding">
@@ -288,122 +297,6 @@
       which aren't in this dataset. MCP availability only separates P0 from P1: it signals a vendor already
       supports agent access, but authentication, plan limits, and permissions still decide whether the
       integration works.</p>
-  </div>
-</section>
-
-<hr class="rule" />
-
-<section id="access">
-  <div class="wrap">
-    <div class="label">Access</div>
-    <h2>Why are some apps blocked?</h2>
-    <p class="intro prose">Each measure is a stricter test than the one before it, applied to the same 100 apps.</p>
-
-    <div class="chain">
-      <div class="cstep"><div class="cv">100</div><div class="ck">Apps researched</div></div>
-      <div class="carrow">&rarr;</div>
-      <div class="cstep"><div class="cv">97</div><div class="ck">Documented public API</div></div>
-      <div class="carrow">&rarr;</div>
-      <div class="cstep"><div class="cv">96</div><div class="ck">Known usable auth</div></div>
-      <div class="carrow">&rarr;</div>
-      <div class="cstep"><div class="cv">74</div><div class="ck">Self-issued credentials</div></div>
-      <div class="carrow">&rarr;</div>
-      <div class="cstep"><div class="cv">56</div><div class="ck">Shippable today</div></div>
-    </div>
-
-    <div class="tscroll" style="margin-top:28px;">
-      <table>
-        <thead>
-          <tr><th scope="col">Measure</th><th scope="col">Apps</th><th scope="col">What it means</th></tr>
-        </thead>
-        <tbody>
-          __LADDER__
-        </tbody>
-      </table>
-    </div>
-    <p class="note" style="margin-top:24px;">The biggest drop is between credential access and immediate
-      buildability: 18 apps. Business verification, developer-token approval, sandbox provisioning, access
-      review, and commercial contracts account for it. None of it is about the API itself.</p>
-    <p class="footnote">Measures derived from the dataset fields <span class="ident">api_surface</span>,
-      <span class="ident">auth_method</span>, <span class="ident">self_serve</span>, and
-      <span class="ident">buildability_verdict</span>.</p>
-  </div>
-</section>
-
-<hr class="rule" />
-
-<section id="dataset">
-  <div class="wrap">
-    <div class="label">Dataset</div>
-    <h2>What did we research?</h2>
-    <p class="intro prose">All 100 apps, with the evidence URL used for each.</p>
-    <div class="tools">
-      <input type="search" id="q" placeholder="Search apps" aria-label="Search apps" />
-      <div class="fset" role="group" aria-label="Filter by buildability">
-        <button data-f="all" aria-pressed="true">All</button>
-        <button data-f="buildable today" aria-pressed="false">Buildable today</button>
-        <button data-f="buildable with limitation" aria-pressed="false">With limitation</button>
-        <button data-f="blocked" aria-pressed="false">Blocked</button>
-      </div>
-      <span class="rc" id="rc">100 apps</span>
-    </div>
-    <div class="tscroll">
-      <table>
-        <thead>
-          <tr><th scope="col">App</th><th scope="col">Category</th><th scope="col">Auth</th><th scope="col">Credential access</th><th scope="col">API / MCP</th><th scope="col">Buildability</th><th scope="col">Evidence</th></tr>
-        </thead>
-        <tbody id="tb">
-          __ROWS__
-        </tbody>
-      </table>
-    </div>
-  </div>
-</section>
-
-<hr class="rule" />
-
-<section id="pipeline">
-  <div class="wrap">
-    <div class="label">Research pipeline</div>
-    <h2>How was the research done?</h2>
-    <p class="intro prose">Takes a list of apps, researches each against live documentation, produces
-      structured records with evidence, and independently re-researches a sample. The 100-app list is one
-      input; swap <span class="ident">data/apps.json</span> to point it at a different set.</p>
-
-    <div class="stages">
-      <div class="stage"><div class="sname">Input</div><div class="sdetail"><b>100</b> apps, <b>10</b> categories: <span class="ident">data/apps.json</span></div></div>
-      <div class="stage"><div class="sname">Research</div><div class="sdetail"><b>10</b> parallel category workers, each searching developer docs, auth pages, pricing/access pages, and MCP references</div></div>
-      <div class="stage"><div class="sname">Structure</div><div class="sdetail"><b>100</b> schema-constrained records: <span class="ident">data/results.json</span></div></div>
-      <div class="stage"><div class="sname">Verify</div><div class="sdetail"><b>18</b>-app independent sample, <b>72</b> field comparisons, no access to the first pass's answers</div></div>
-      <div class="stage"><div class="sname">Correct</div><div class="sdetail"><b>5</b> source-checked corrections merged back into the dataset</div></div>
-      <div class="stage"><div class="sname">Output</div><div class="sdetail"><span class="ident">results.json</span> + <span class="ident">verification.json</span></div></div>
-    </div>
-
-    <ol class="method prose">
-      <li>Each category batch can be rerun on its own without touching the other nine.</li>
-      <li>A worker that can't establish an answer returns low confidence instead of guessing.</li>
-      <li>Every record supplies <span class="ident">auth_method</span>, <span class="ident">self_serve</span>,
-        <span class="ident">api_surface</span>, <span class="ident">mcp_exists</span>,
-        <span class="ident">buildability_verdict</span>, <span class="ident">evidence</span>, and
-        <span class="ident">confidence</span>. The prompt requires a source URL for every claim; output that
-        fails to parse against these keys is retried once, then recorded as a parse error.</li>
-    </ol>
-
-    <h2 style="margin-top:44px;">Run it yourself</h2>
-    <pre class="cmd"><code>pip install -r requirements.txt
-export ANTHROPIC_API_KEY=sk-ant-...
-
-# smoke test against 5 apps
-python agent/research.py --input data/apps.json --output data/results.json --limit 5
-
-# full run over the 100-app list
-python agent/research.py --input data/apps.json --output data/results.json
-
-# independent verification pass over a random sample
-python agent/verify.py --input data/results.json --sample 20 --output data/verification.json</code></pre>
-    <p class="footnote"><a href="https://github.com/NITISH-R-G/composio-app-research/blob/master/agent/research.py" target="_blank" rel="noopener">Research agent source</a> ·
-      <a href="https://github.com/NITISH-R-G/composio-app-research/blob/master/agent/verify.py" target="_blank" rel="noopener">Verification source</a> ·
-      <a href="https://github.com/NITISH-R-G/composio-app-research/blob/master/agent/schema.py" target="_blank" rel="noopener">Schema</a></p>
   </div>
 </section>
 
@@ -463,6 +356,100 @@ python agent/verify.py --input data/results.json --sample 20 --output data/verif
         </tbody>
       </table>
     </div>
+  </div>
+</section>
+
+<hr class="rule" />
+
+<section id="pipeline">
+  <div class="wrap">
+    <div class="label">Research pipeline</div>
+    <h2>How was the research done?</h2>
+    <p class="intro prose">Takes a list of apps, researches each against live documentation, produces
+      structured records with evidence, and independently re-researches a sample. The 100-app list is one
+      input; swap <span class="ident">data/apps.json</span> to point it at a different set.</p>
+
+    <div class="stages">
+      <div class="stage"><div class="sname">Input</div><div class="sdetail"><b>100</b> apps, <b>10</b> categories: <span class="ident">data/apps.json</span></div></div>
+      <div class="stage"><div class="sname">Research</div><div class="sdetail"><b>10</b> parallel category workers, each searching developer docs, auth pages, pricing/access pages, and MCP references</div></div>
+      <div class="stage"><div class="sname">Structure</div><div class="sdetail"><b>100</b> schema-constrained records: <span class="ident">data/results.json</span></div></div>
+      <div class="stage"><div class="sname">Verify</div><div class="sdetail"><b>18</b>-app independent sample, <b>72</b> field comparisons, no access to the first pass's answers</div></div>
+      <div class="stage"><div class="sname">Correct</div><div class="sdetail"><b>5</b> source-checked corrections merged back into the dataset</div></div>
+      <div class="stage"><div class="sname">Output</div><div class="sdetail"><span class="ident">results.json</span> + <span class="ident">verification.json</span></div></div>
+    </div>
+
+    <ol class="method prose">
+      <li>Each category batch can be rerun on its own without touching the other nine.</li>
+      <li>A worker that can't establish an answer returns low confidence instead of guessing.</li>
+      <li>Every record supplies <span class="ident">auth_method</span>, <span class="ident">self_serve</span>,
+        <span class="ident">api_surface</span>, <span class="ident">mcp_exists</span>,
+        <span class="ident">buildability_verdict</span>, <span class="ident">evidence</span>, and
+        <span class="ident">confidence</span>. The prompt requires a source URL for every claim; output that
+        fails to parse against these keys is retried once, then recorded as a parse error.</li>
+    </ol>
+
+    <h2 style="margin-top:44px;">Run it yourself</h2>
+    <pre class="cmd"><code>pip install -r requirements.txt
+export ANTHROPIC_API_KEY=sk-ant-...
+
+# smoke test against 5 apps
+python agent/research.py --input data/apps.json --output data/results.json --limit 5
+
+# full run over the 100-app list
+python agent/research.py --input data/apps.json --output data/results.json
+
+# independent verification pass over a random sample
+python agent/verify.py --input data/results.json --sample 20 --output data/verification.json</code></pre>
+    <p class="footnote"><a href="https://github.com/NITISH-R-G/composio-app-research/blob/master/agent/research.py" target="_blank" rel="noopener">Research agent source</a> ·
+      <a href="https://github.com/NITISH-R-G/composio-app-research/blob/master/agent/verify.py" target="_blank" rel="noopener">Verification source</a> ·
+      <a href="https://github.com/NITISH-R-G/composio-app-research/blob/master/agent/schema.py" target="_blank" rel="noopener">Schema</a></p>
+  </div>
+</section>
+
+<hr class="rule" />
+
+<section id="dataset">
+  <div class="wrap">
+    <div class="label">Dataset</div>
+    <h2>What did we research?</h2>
+    <p class="intro prose">All 100 apps, with the evidence URL used for each.</p>
+    <div class="tools">
+      <input type="search" id="q" placeholder="Search apps" aria-label="Search apps" />
+      <div class="fset" role="group" aria-label="Filter by buildability">
+        <button data-f="all" aria-pressed="true">All</button>
+        <button data-f="buildable today" aria-pressed="false">Buildable today</button>
+        <button data-f="buildable with limitation" aria-pressed="false">With limitation</button>
+        <button data-f="blocked" aria-pressed="false">Blocked</button>
+      </div>
+      <span class="rc" id="rc">100 apps</span>
+    </div>
+    <div class="tscroll">
+      <table>
+        <thead>
+          <tr><th scope="col">App</th><th scope="col">Category</th><th scope="col">Auth</th><th scope="col">Credential access</th><th scope="col">API / MCP</th><th scope="col">Buildability</th><th scope="col">Evidence</th></tr>
+        </thead>
+        <tbody id="tb">
+          __ROWS__
+        </tbody>
+      </table>
+    </div>
+
+    <h2 style="margin-top:44px;">Access measures</h2>
+    <p class="intro prose">Each measure is a stricter test than the one before it, applied to the same 100 apps.
+      This is what the chain in Finding 02 is built from.</p>
+    <div class="tscroll">
+      <table>
+        <thead>
+          <tr><th scope="col">Measure</th><th scope="col">Apps</th><th scope="col">What it means</th></tr>
+        </thead>
+        <tbody>
+          __LADDER__
+        </tbody>
+      </table>
+    </div>
+    <p class="footnote">Derived from the dataset fields <span class="ident">api_surface</span>,
+      <span class="ident">auth_method</span>, <span class="ident">self_serve</span>, and
+      <span class="ident">buildability_verdict</span>.</p>
   </div>
 </section>
 
