@@ -87,9 +87,14 @@
   }
   h1 { font-size: clamp(30px, 4.4vw, 46px); letter-spacing: -0.025em; max-width: 18ch; }
   .summary { font-size: 18px; color: var(--ink-2); margin-top: 24px; line-height: 1.6; }
+  .headline {
+    font-size: 19px; font-weight: 600; letter-spacing: -0.012em; line-height: 1.45;
+    margin-top: 8px; padding-top: 20px; border-top: 1px solid var(--rule-soft);
+  }
   .toc { margin-top: 28px; font-size: 14px; color: var(--ink-3); }
   .toc a { color: var(--ink-2); }
   .toc a + a::before { content: "·"; margin: 0 10px; color: var(--rule); }
+  .stamp { margin-top: 16px; font-size: 13px; color: var(--ink-3); max-width: 48em; }
 
   /* Findings */
   .finding { padding: 24px 0; border-top: 1px solid var(--rule-soft); }
@@ -149,6 +154,14 @@
   dl.figures dt { font-size: 13px; color: var(--ink-3); }
   dl.figures dd { margin: 4px 0 0; font-size: 26px; font-weight: 600; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
 
+  pre.cmd {
+    margin: 0; padding: 20px; overflow-x: auto;
+    background: var(--row-alt); border: 1px solid var(--rule-soft); border-radius: 6px;
+    font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+    font-size: 13.5px; line-height: 1.7; color: var(--ink-2); max-width: 760px;
+  }
+  pre.cmd code { font-size: inherit; color: inherit; }
+
   .note { font-size: 15px; color: var(--ink-2); max-width: 46em; }
   .note strong { color: var(--ink); font-weight: 600; }
   .footnote { font-size: 13px; color: var(--ink-3); max-width: 46em; margin-top: 20px; }
@@ -175,9 +188,23 @@
     <p class="summary prose">We researched 100 apps across 10 categories to determine whether Composio could
       build an agent toolkit for each one. The research covered authentication, credential access, API
       surface, MCP availability, and buildability.</p>
+
+    <dl class="figures" style="margin-top:32px;">
+      <div><dt>Apps researched</dt><dd class="num">100</dd></div>
+      <div><dt>Buildable in some form</dt><dd class="num">90</dd></div>
+      <div><dt>Immediately shippable</dt><dd class="num">56</dd></div>
+      <div><dt>Independently re-researched</dt><dd class="num">18</dd></div>
+      <div><dt>Errors caught and corrected</dt><dd class="num">5</dd></div>
+    </dl>
+
+    <p class="headline prose">Credential access is a larger practical constraint than API availability.
+      97 apps have a documented public API; 56 can be built without a business relationship first.</p>
+
     <nav class="toc">
-      <a href="#findings">Findings</a><a href="#recommendation">Recommendation</a><a href="#access">Access</a><a href="#dataset">Dataset</a><a href="#method">Method</a><a href="#verification">Verification</a><a href="#review">Human review</a>
+      <a href="#recommendation">Recommendation</a><a href="#dataset">Dataset</a><a href="#pipeline">Research pipeline</a><a href="#verification">Verification</a><a href="#review">Human review</a>
     </nav>
+    <p class="stamp">Researched August 2026. Access conditions, pricing, and MCP availability change; treat this
+      as a dated snapshot rather than a standing fact table.</p>
   </div>
 </header>
 
@@ -227,8 +254,13 @@
         </tbody>
       </table>
     </div>
+    <p class="note" style="margin-top:24px;"><strong>This is a feasibility ranking, not a roadmap.</strong>
+      It answers how hard each app is to integrate and how readily credentials can be obtained. Customer
+      demand, revenue, and strategic value are a separate layer, and should be applied on top of this before
+      anything is scheduled. A widely requested app in P2 may well outrank a frictionless one in P0.</p>
     <p class="footnote">MCP availability is used only to separate P0 from P1. It indicates a vendor already
-      supports agent access, but it does not establish that an API is usable, so it is not treated as a
+      supports agent access, but an MCP server is an access interface rather than an access guarantee &mdash;
+      authentication, plan, permission, and capability limits still apply &mdash; so it is not treated as a
       buildability test on its own.</p>
   </div>
 </section>
@@ -292,21 +324,46 @@
 
 <hr class="rule" />
 
-<section id="method">
+<section id="pipeline">
   <div class="wrap">
-    <div class="label">Research method</div>
+    <div class="label">Research pipeline</div>
     <h2>How was the research done?</h2>
-    <p class="intro prose">Each category was split into a batch of 10 apps. A research agent searched developer
-      documentation, authentication pages, pricing and access pages, and MCP references. Every result had to be
-      returned in a fixed schema with evidence URLs, or marked low confidence rather than guessed.</p>
+    <p class="intro prose">A reusable pipeline that takes a list of apps, researches each one against live
+      documentation, produces structured records with evidence, and runs an independent verification pass over
+      a sample. It is not a one-off script for these 100 apps &mdash; the app list is an input.</p>
     <ol class="method prose">
-      <li><strong>10 category batches</strong> — the 100-app list split by category.</li>
-      <li><strong>10 research agents, run in parallel</strong> — one per batch, each searching live developer documentation.</li>
+      <li><strong>10 category batches</strong> — the 100-app list split by category, so each unit of work has a bounded context and a clean re-run boundary.</li>
+      <li><strong>10 research workers, run in parallel</strong> — each one searched developer documentation, authentication pages, pricing and access pages, and MCP references, judged the evidence, filled a fixed schema, and returned low confidence rather than guessing when it could not establish an answer.</li>
       <li><strong>100 structured records</strong> — validated against the schema and merged into <span class="ident">data/results.json</span>.</li>
-      <li><strong>Independent re-research of 18 apps</strong> — a separate agent, with no access to the first pass's reasoning.</li>
-      <li><strong>Field-by-field comparison</strong> — four fields per app, 72 checks in total.</li>
+      <li><strong>Independent re-research of 18 apps</strong> — a separate worker with no access to the first pass's answers or reasoning.</li>
+      <li><strong>Field-by-field comparison</strong> — four decision-relevant fields per app, 72 checks in total.</li>
       <li><strong>Corrections merged</strong> — every disagreement resolved against sources and written back to the dataset.</li>
     </ol>
+
+    <p class="note" style="margin-top:28px;"><strong>The schema is the control.</strong> Each record must supply
+      <span class="ident">auth_method</span>, <span class="ident">self_serve</span>,
+      <span class="ident">api_surface</span>, <span class="ident">mcp_exists</span>,
+      <span class="ident">buildability_verdict</span>, <span class="ident">evidence</span>, and
+      <span class="ident">confidence</span>. Constraining the output shape limits what a worker is able to
+      claim, and makes an unsupported claim visible rather than fluent.</p>
+
+    <h2 style="margin-top:44px;">Run it yourself</h2>
+    <p class="intro prose">The pipeline runs against any app list. These are the actual commands, from the
+      repository root.</p>
+    <pre class="cmd"><code>pip install -r requirements.txt
+export ANTHROPIC_API_KEY=sk-ant-...
+
+# smoke test against 5 apps
+python agent/research.py --input data/apps.json --output data/results.json --limit 5
+
+# full run over the 100-app list
+python agent/research.py --input data/apps.json --output data/results.json
+
+# independent verification pass over a random sample
+python agent/verify.py --input data/results.json --sample 20 --output data/verification.json</code></pre>
+    <p class="footnote"><a href="https://github.com/NITISH-R-G/composio-app-research/blob/master/agent/research.py" target="_blank" rel="noopener">View research agent source</a> ·
+      <a href="https://github.com/NITISH-R-G/composio-app-research/blob/master/agent/verify.py" target="_blank" rel="noopener">View verification source</a> ·
+      <a href="https://github.com/NITISH-R-G/composio-app-research/blob/master/agent/schema.py" target="_blank" rel="noopener">View schema</a></p>
   </div>
 </section>
 

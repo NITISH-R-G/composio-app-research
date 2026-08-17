@@ -1,128 +1,192 @@
-# Composio App-Research Pipeline
+# App Toolkit Feasibility Research Pipeline
 
-Research pass over 100 apps (10 categories) to answer: **auth method, self-serve vs
-gated, API surface breadth, MCP availability, and agent-toolkit buildability** —
-the questions Composio asks before building a toolkit for a new app.
+A reusable research pipeline that takes a list of apps, researches each one against
+live developer documentation, produces structured records with cited evidence, and
+runs an independent verification pass over a sample.
 
-**Live case study:** see the published Artifact link in the submission.
-**Dataset:** [`data/results.json`](data/results.json) (100 records)
-**Verification:** [`data/verification.json`](data/verification.json) (18-app independent audit)
+Applied here to 100 apps across 10 categories, answering the question Composio asks
+before building a toolkit: **can we build an agent toolkit for this app today, and if
+not, what is actually stopping us?**
 
-## How this was actually run
+- **Live memo:** the published case study (link in the submission)
+- **Dataset:** [`data/results.json`](data/results.json) — 100 records
+- **Verification log:** [`data/verification.json`](data/verification.json) — 18-app audit
 
-The reference pipeline (`agent/research.py`) is written to call the Anthropic API's
-`web_search` tool directly — that's the "run it yourself with an API key" path
-described below. For this submission, the same research task (identical schema
-and prompts, see `agent/schema.py`) was instead executed as **10 parallel Claude
-Code subagents**, one per category, each independently researching its 10 apps with
-real web search + doc fetches and returning cited JSON. That's the same
-architecture (LLM + web search + strict schema), just orchestrated via the agent
-runtime present in this environment instead of a bare API key loop. A separate
-11th agent then re-verified 18 of those records from scratch, blind to the first
-pass's reasoning, to produce the accuracy numbers below.
+---
 
-## The finding, in one line
+## Headline result
 
-**90 of 100 are buildable in some form — 56 today, 34 with a workaround, 10 blocked.
-Almost every app has a real documented API; what separates them is access.** The
-access ladder derived from the dataset:
+**Credential access is a larger practical constraint than API availability.**
 
-| Rung | Test | Apps passing |
+| Measure | Apps | What it means |
 |---|---|---|
-| 1 | A documented public API exists | 97 |
-| 2 | Auth method is known and usable | 96 |
-| 3 | A developer can self-issue credentials | 74 |
-| 4 | Shippable toolkit today | 56 |
+| Documented public API | 97 | Public developer documentation exists |
+| Known usable auth | 96 | An auth path could be established from the docs |
+| Self-issued credentials | 74 | A developer can get credentials without contacting sales |
+| Shippable today | 56 | No material access blocker |
 
-The steep drop is rung 3→4 and it is almost entirely non-technical: business
-verification, developer-token approval, sandbox provisioning, access review,
-commercial contracts. That's a sourcing/partnerships problem, not an engineering one.
+90 of 100 are buildable in some form: 56 today, 34 with a limitation, 10 blocked.
+The largest drop is between credential access and immediate buildability — business
+verification, developer-token approval, sandbox provisioning, access review, and
+commercial contracts, not anything about the APIs themselves.
 
-## Build order (what I'd actually recommend)
+---
 
-Each app lands in exactly one tier; the tiers sum to 100.
-
-| Tier | Profile | Count | Why |
-|---|---|---|---|
-| **P0** Build first | Self-serve free + buildable today + MCP exists | 29 | Lowest integration cost; vendor already invests in agent access |
-| **P1** Fast follow | Buildable today, needs trial/paid account or has no MCP | 27 | Straightforward engineering, no outreach needed |
-| **P2** Build on demand | Real limitation (paid tier, rate limits, narrow surface) | 30 | Worth building when a customer asks |
-| **P3** Customer-led only | Enterprise contract, partner review, no self-serve path | 8 | Gate is commercial, not technical — needs a named customer |
-| **P4** Human validation first | Could not verify from public sources | 6 | Someone must sign up or contact sales before deciding |
-
-**A caution on MCP:** MCP availability is a useful *ecosystem signal*, not a
-substitute for API feasibility, and it was the most error-prone field in this
-research. The order that matters is: can we access the product → can we
-authenticate → is the API useful enough → is it commercially viable → and only
-then, does an MCP server already exist.
-
-## Repo layout
+## Architecture
 
 ```
-agent/
-  schema.py       # shared record schema + prompt template
-  research.py     # reference pipeline: Anthropic API + web_search -> data/results.json
-  verify.py       # samples N records, re-derives them independently, diffs vs original
-data/
-  apps.json       # the 100-app input list
-  results.json    # 100 researched records (the dataset)
-  verification.json  # 18-record independent audit output
-site/
-  case_study.html # the self-contained case-study page (also published as an Artifact)
+Input:  data/apps.json  (100 apps, name + category + hint)
+   |
+   v
+Category batching            10 batches of 10 — bounded context per unit of work,
+   |                         and a clean re-run boundary if one batch fails
+   v
+Parallel research workers    each searches developer docs, auth pages, pricing/access
+   |                         pages and MCP references; judges evidence; fills the schema
+   v
+Structured JSON + evidence   every claim carries a source URL, or is marked low confidence
+   |
+   v
+Schema validation            malformed output retried once, then recorded as a parse error
+   |                         rather than silently dropped
+   v
+data/results.json            100 merged records
+   |
+   v
+Independent verification     agent/verify.py re-researches a random sample from scratch,
+   |                         with no access to the first pass's answers
+   v
+Field-level comparison       4 decision-relevant fields per app, diffed
+   |
+   v
+Correction pass              disagreements resolved against sources, merged back
+   |
+   v
+Final dataset + audit log
 ```
 
-## Running the research agent yourself
+### Components
+
+| File | Responsibility |
+|---|---|
+| [`agent/schema.py`](agent/schema.py) | The record schema and the research prompt template. This is the control surface — constraining output shape limits what a worker can claim. |
+| [`agent/research.py`](agent/research.py) | Runs the research pass: web search per app, strict JSON extraction, one retry on malformed output, optional Composio toolkit-registry cross-check. |
+| [`agent/verify.py`](agent/verify.py) | Runs the independent pass: samples N records, re-derives each from scratch via the same call path, diffs 4 fields, reports an agreement rate. |
+| [`data/apps.json`](data/apps.json) | Pipeline input. Swap this file to research a different set. |
+| [`site/build.js`](site/build.js) | Renders the dataset into the static memo. All figures are computed from the data, never hardcoded. |
+
+### The schema
+
+```
+app  category  auth_method  self_serve  api_surface
+mcp_exists  buildability_verdict  blocker  evidence  confidence
+```
+
+`evidence` is a list of URLs the worker actually used. `confidence` lets a worker say
+*I could not establish this* instead of producing a fluent guess — 6 of 100 records
+came back low confidence, which is a correct outcome, not a failure.
+
+---
+
+## Running it
 
 ```bash
-pip install anthropic requests
+pip install -r requirements.txt
 export ANTHROPIC_API_KEY=sk-ant-...
-export COMPOSIO_API_KEY=...          # optional: cross-checks Composio's own toolkit registry
+export COMPOSIO_API_KEY=...   # optional — cross-checks Composio's existing toolkit registry
 
-python agent/research.py --input data/apps.json --output data/results.json --limit 5   # smoke test
-python agent/research.py --input data/apps.json --output data/results.json             # full 100
-python agent/verify.py   --input data/results.json --sample 20 --output data/verification.json
+# smoke test against 5 apps
+python agent/research.py --input data/apps.json --output data/results.json --limit 5
+
+# full run
+python agent/research.py --input data/apps.json --output data/results.json
+
+# independent verification pass
+python agent/verify.py --input data/results.json --sample 20 --output data/verification.json
+
+# rebuild the memo from the dataset
+node site/build.js
 ```
 
-Each call to `research_one()` gives Claude the `web_search` tool and a strict
-JSON-schema prompt (`agent/schema.py`), asks for cited evidence URLs for every
-claim, and retries once on malformed JSON. `verify.py` runs the same research
-independently on a random sample and diffs the two answers per field, reporting
-an agreement rate — this is the accuracy loop, not a single trusted pass.
+### How this submission was actually run
 
-## Where a human is needed
+`agent/research.py` is written against the Anthropic API's `web_search` tool — the
+path above. For this submission the same task, schema, and prompts were executed as
+**10 parallel Claude Code subagents**, one per category, because that runtime was
+what this environment provided. Same architecture — LLM plus web search under a fixed
+cited-JSON schema — different orchestration. An 11th agent then ran the verification
+pass. This is stated plainly rather than implied, because the two paths are not
+identical and the interview should be able to probe either.
 
-- **No public docs at all** (fanbasis, Paygent Connect): the agent correctly
-  reports "couldn't find it" rather than guessing — but confirming an app truly
-  has *no* public API (vs. just hard-to-find docs) needs a human to actually try
-  signing up / emailing sales.
-- **MCP existence** is the single most error-prone field — "unofficial community
-  MCP servers exist" vs "official first-party MCP" is a nuance the agent
-  sometimes blurs, and it's exactly the kind of claim that decays fast (new
-  official MCP servers ship monthly). Treat `mcp_exists` as a lead to re-check,
-  not a final answer, for anything not "confidence: high".
-- **Self-serve classification for ad platforms and enterprise SaaS** (Google Ads,
-  Meta Ads, Salesforce Commerce Cloud, DealCloud) involves judgment calls about
-  what counts as "approval" vs "review" — a human should sanity-check the
-  boundary cases before using this to prioritize build order.
+---
 
-## Honesty notes
+## Verification: what the number means
 
-- 6 of 100 records are `confidence: low` — the agent flagged these itself rather
-  than guessing (MrScraper, Waterfall.io, higgsfield, Sherlock's MCP status,
-  fanbasis, Paygent Connect). These are the apps that "defeated" straightforward
-  research and need direct outreach.
-- **What the accuracy number does and does not claim.** The independent pass covers
-  18 of 100 apps × 4 fields = **72 field-checks**. 13 of 18 records came back clean;
-  5 had exactly one stale or overstated field each → **93% first-pass accuracy, 100%
-  after those 5 corrections were merged**. This is *not* a claim that all 100 records
-  are verified — the other 82 carry only their first-pass confidence rating.
-- **How the second pass verified.** It independently *re-researched* each sampled app
-  rather than hand-checking every claim against first-party documentation, so some
-  corrections rest on credible secondary sources (each linked in
-  `data/verification.json`). The loop is: first research → blind independent
-  re-research → field-by-field diff → correction → final dataset.
-- **The error shape is the interesting part.** Of the 5 corrections, 2 were
-  `mcp_exists` (Zendesk, Harvest — both "no official MCP" claims that were already
-  stale) and 2 were `self_serve` (Ahrefs, Ramp — gating stated one way in docs and
-  enforced another way in practice). Those two fields are where an agent researching
-  this problem will keep being wrong, which is the argument for the loop existing.
+| | |
+|---|---|
+| Apps independently re-researched | 18 / 100 |
+| Fields checked | 72 |
+| Matched on first pass | 67 |
+| Required correction | 5 |
+| Agreement after correction | 72 / 72 |
+
+**93.1% first-pass agreement on the sampled fields, reaching full agreement after the
+five disagreements were investigated and corrected.**
+
+This is **not** a claim that all 100 records are accurate. The other 82 retain only
+their first-pass confidence rating. The second pass re-researched each sampled app
+independently rather than hand-checking every claim against first-party documentation,
+so some corrections rest on credible secondary sources — each is linked in the log.
+
+**Why 18, and why 4 fields?** This was an engineering verification sample, not a
+statistically powered audit. 18 gave coverage across all 10 categories within the time
+budget and was enough to expose failure modes. The 4 fields are the ones that drive the
+buildability decision — auth, credential access, API/MCP surface, and the verdict —
+so checking descriptive fields would have added checks without adding confidence in the
+decision. A production version would stratify sampling by category and confidence, and
+size the sample from the observed error rate.
+
+### What the second pass caught
+
+| App | Field | First-pass issue | Correction |
+|---|---|---|---|
+| Zendesk | `mcp_exists` | Recorded as having no official MCP server | A first-party MCP endpoint had shipped since |
+| Harvest | `mcp_exists` | Recorded as having no MCP server | Several community MCP servers already existed |
+| Ahrefs | `self_serve` | Described as Enterprise-only at $1,499/mo | Lower tiers get limited API access; Enterprise is ~$1,249/mo |
+| Ramp | `self_serve` | Sandbox described as self-serve | Sandbox provisioning requires an account manager |
+| fanbasis | `api_surface` | Described as having no public documentation | A public API reference and SDK exist outside the gated portal |
+
+The errors cluster in two fields, and that is the useful finding. **Ramp** is the
+clearest: the worker found the API documentation correctly but conflated *API exists*
+with *credentials are obtainable*. That is exactly the distinction this research is
+supposed to make, which is why they are separate fields rather than one broad
+"API available" judgment. **Ahrefs** shows the other mode — pricing and access tiers
+are volatile, and a confident number can be stale within months.
+
+---
+
+## Known limitations
+
+- **The dataset is a dated snapshot** (August 2026). Access conditions, pricing, and
+  MCP availability change. `mcp_exists` in particular decays fast — vendors ship
+  official MCP servers monthly.
+- **6 records need human review**, listed on the memo. Public web evidence was
+  insufficient; confirming them requires account access, direct outreach, or a gated
+  developer portal.
+- **Source quality is not yet graded.** First-party documentation and credible
+  secondary sources are both recorded in `evidence` without being distinguished.
+- **The build order is a feasibility ranking, not a roadmap.** Customer demand and
+  strategic value are a separate layer to apply on top.
+
+## What I would build next
+
+1. **Freshness metadata** — `retrieved_at` and `source_type` per evidence URL, so
+   staleness is queryable instead of assumed.
+2. **A source hierarchy** — official docs > official pricing/access pages > official
+   announcements > credible secondary > unresolved, with the tier recorded.
+3. **Contradiction detection** — when two sources disagree, mark the conflict and queue
+   it rather than silently picking one.
+4. **Adaptive verification** — target the sample at low-confidence records, conflicting
+   sources, and claims that decide a tier, instead of sampling uniformly.
+5. **Incremental re-research** — re-run only records whose evidence has gone stale,
+   which is what makes this scale past 100 apps.

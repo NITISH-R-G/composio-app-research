@@ -65,7 +65,7 @@ def extract_json(text):
     return json.loads(match.group(0))
 
 
-def research_one(client, app_record, model="claude-sonnet-4-5"):
+def research_one(client, app_record, model="claude-sonnet-5"):
     prompt = RESEARCH_PROMPT_TEMPLATE.format(
         app=app_record["app"], hint=app_record["hint"], keys=", ".join(RECORD_KEYS)
     )
@@ -120,7 +120,7 @@ def main():
     ap.add_argument("--input", default="data/apps.json")
     ap.add_argument("--output", default="data/results.json")
     ap.add_argument("--limit", type=int, default=None)
-    ap.add_argument("--model", default="claude-sonnet-4-5")
+    ap.add_argument("--model", default="claude-sonnet-5")
     args = ap.parse_args()
 
     if anthropic is None:
