@@ -49,11 +49,11 @@ const T4 = results.filter(isLow);
 const eg = a => a.slice(0, 3).map(x => x.app).join(', ');
 
 const tierDefs = [
-  ['P0 — Build first', T0, 'Free to start, buildable today, and an MCP server already exists.'],
-  ['P1 — Fast follow', T1, 'Buildable today, but needs a trial or paid account, or has no MCP yet.'],
-  ['P2 — Build on demand', T2, 'A paid tier, rate limit, narrow API, or approval step gets in the way.'],
-  ['P3 — Customer-led only', T3, 'Needs an enterprise contract or approval. The barrier is commercial, not technical.'],
-  ['P4 — Human validation first', T4, 'Could not be confirmed from public sources.'],
+  ['P0: Build first', T0, 'Free to start, buildable today, MCP server already exists.'],
+  ['P1: Fast follow', T1, 'Buildable today, needs a trial or paid account, or has no MCP yet.'],
+  ['P2: Build on demand', T2, 'A paid tier, rate limit, narrow API, or approval step gets in the way.'],
+  ['P3: Customer-led only', T3, 'Needs an enterprise contract or approval. The barrier is commercial.'],
+  ['P4: Human validation first', T4, 'Could not be confirmed from public sources.'],
 ];
 const tiers = tierDefs.map(([name, arr, why]) => `
   <tr>

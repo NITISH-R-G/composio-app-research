@@ -197,8 +197,8 @@
       <div><dt>Errors caught and corrected</dt><dd class="num">5</dd></div>
     </dl>
 
-    <p class="headline prose">Credential access is a larger practical constraint than API availability.
-      97 apps have a documented public API; 56 can be built without a business relationship first.</p>
+    <p class="headline prose">97 apps have a documented public API. 74 provide self-issued credentials.
+      56 can be built without a business relationship. Credential access is where the drop happens.</p>
 
     <nav class="toc">
       <a href="#recommendation">Recommendation</a><a href="#dataset">Dataset</a><a href="#pipeline">Research pipeline</a><a href="#verification">Verification</a><a href="#review">Human review</a>
@@ -222,16 +222,14 @@
 
     <div class="finding">
       <div class="fnum">Finding 02</div>
-      <p class="fclaim">The main constraint is access, not whether an API exists.</p>
-      <p class="fdetail">97 apps have a documented public API, but only 74 let a developer obtain credentials
-        without contacting sales under the dataset's definition, and 56 are immediately shippable.</p>
+      <p class="fclaim">97 apps have a documented public API. 74 let a developer obtain credentials without
+        contacting sales. 56 are immediately shippable.</p>
     </div>
 
     <div class="finding">
       <div class="fnum">Finding 03</div>
-      <p class="fclaim">The research agent's most common errors were about changing access conditions and MCP
-        availability.</p>
-      <p class="fdetail">Five corrections were found in the 18-app independent re-research sample.</p>
+      <p class="fclaim">Five corrections came out of the 18-app independent re-research sample, two on MCP
+        status and two on access conditions.</p>
     </div>
   </div>
 </section>
@@ -252,31 +250,31 @@
         <tbody>
           
   <tr>
-    <td class="tier">P0 — Build first</td>
+    <td class="tier">P0: Build first</td>
     <td class="n">29</td>
-    <td>Free to start, buildable today, and an MCP server already exists.</td>
+    <td>Free to start, buildable today, MCP server already exists.</td>
     <td class="eg">Salesforce, HubSpot, Attio</td>
   </tr>
   <tr>
-    <td class="tier">P1 — Fast follow</td>
+    <td class="tier">P1: Fast follow</td>
     <td class="n">27</td>
-    <td>Buildable today, but needs a trial or paid account, or has no MCP yet.</td>
+    <td>Buildable today, needs a trial or paid account, or has no MCP yet.</td>
     <td class="eg">Pipedrive, Close, Zendesk</td>
   </tr>
   <tr>
-    <td class="tier">P2 — Build on demand</td>
+    <td class="tier">P2: Build on demand</td>
     <td class="n">30</td>
     <td>A paid tier, rate limit, narrow API, or approval step gets in the way.</td>
     <td class="eg">Podio, Copper, Intercom</td>
   </tr>
   <tr>
-    <td class="tier">P3 — Customer-led only</td>
+    <td class="tier">P3: Customer-led only</td>
     <td class="n">8</td>
-    <td>Needs an enterprise contract or approval. The barrier is commercial, not technical.</td>
+    <td>Needs an enterprise contract or approval. The barrier is commercial.</td>
     <td class="eg">DealCloud, Gladly, LinkedIn Ads</td>
   </tr>
   <tr>
-    <td class="tier">P4 — Human validation first</td>
+    <td class="tier">P4: Human validation first</td>
     <td class="n">6</td>
     <td>Could not be confirmed from public sources.</td>
     <td class="eg">Pumble, fanbasis, MrScraper</td>
@@ -284,14 +282,12 @@
         </tbody>
       </table>
     </div>
-    <p class="note" style="margin-top:24px;"><strong>This is a feasibility ranking, not a roadmap.</strong>
-      It answers how hard each app is to integrate and how readily credentials can be obtained. Customer
-      demand, revenue, and strategic value are a separate layer, and should be applied on top of this before
-      anything is scheduled. A widely requested app in P2 may well outrank a frictionless one in P0.</p>
-    <p class="footnote">MCP availability is used only to separate P0 from P1. It indicates a vendor already
-      supports agent access, but an MCP server is an access interface rather than an access guarantee &mdash;
-      authentication, plan, permission, and capability limits still apply &mdash; so it is not treated as a
-      buildability test on its own.</p>
+    <p class="note" style="margin-top:24px;"><strong>This ranks integration difficulty, not product priority.</strong>
+      Customer demand, revenue, and strategic value sit on top of this and aren't in the data. A widely
+      requested app in P2 can outrank a frictionless one in P0.</p>
+    <p class="footnote">MCP availability only separates P0 from P1. A vendor with an MCP server has signaled
+      it wants agent access, but authentication, plan limits, permissions, and tool coverage still decide
+      whether the integration works, so MCP status alone doesn't determine buildability.</p>
   </div>
 </section>
 
@@ -333,9 +329,9 @@
         </tbody>
       </table>
     </div>
-    <p class="note" style="margin-top:24px;">The largest practical drop is between credential access and
-      immediate buildability. Those 18 apps are held up by business verification, developer-token approval,
-      sandbox provisioning, access review, or a commercial contract &mdash; not by anything about the API.</p>
+    <p class="note" style="margin-top:24px;">The biggest drop is between credential access and immediate
+      buildability, 18 apps. Business verification, developer-token approval, sandbox provisioning, access
+      review, and commercial contracts account for it. None of it is about the API itself.</p>
     <p class="footnote">Measures derived from the dataset fields <span class="ident">api_surface</span>,
       <span class="ident">auth_method</span>, <span class="ident">self_serve</span>, and
       <span class="ident">buildability_verdict</span>.</p>
@@ -1277,24 +1273,24 @@
   <div class="wrap">
     <div class="label">Research pipeline</div>
     <h2>How was the research done?</h2>
-    <p class="intro prose">A reusable pipeline that takes a list of apps, researches each one against live
-      documentation, produces structured records with evidence, and runs an independent verification pass over
-      a sample. It is not a one-off script for these 100 apps &mdash; the app list is an input.</p>
+    <p class="intro prose">Takes a list of apps, researches each one against live documentation, produces
+      structured records with evidence, and runs an independent verification pass over a sample. The 100-app
+      list is one input; swap <span class="ident">data/apps.json</span> to point it at a different set.</p>
     <ol class="method prose">
-      <li><strong>10 category batches</strong> — the 100-app list split by category, so each unit of work has a bounded context and a clean re-run boundary.</li>
-      <li><strong>10 research workers, run in parallel</strong> — each one searched developer documentation, authentication pages, pricing and access pages, and MCP references, judged the evidence, filled a fixed schema, and returned low confidence rather than guessing when it could not establish an answer.</li>
-      <li><strong>100 structured records</strong> — validated against the schema and merged into <span class="ident">data/results.json</span>.</li>
-      <li><strong>Independent re-research of 18 apps</strong> — a separate worker with no access to the first pass's answers or reasoning.</li>
-      <li><strong>Field-by-field comparison</strong> — four decision-relevant fields per app, 72 checks in total.</li>
-      <li><strong>Corrections merged</strong> — every disagreement resolved against sources and written back to the dataset.</li>
+      <li><strong>10 category batches.</strong> The 100-app list split by category. A failed batch can be rerun without touching the other nine.</li>
+      <li><strong>10 research workers, run in parallel.</strong> Each searched developer documentation, authentication pages, pricing and access pages, and MCP references, then filled a fixed schema. A worker that couldn't establish an answer returned low confidence instead of guessing.</li>
+      <li><strong>100 structured records,</strong> validated against the schema and merged into <span class="ident">data/results.json</span>.</li>
+      <li><strong>Independent re-research of 18 apps</strong> by a separate worker with no access to the first pass's answers.</li>
+      <li><strong>Field-by-field comparison</strong> on four decision-relevant fields per app: 72 checks.</li>
+      <li><strong>Corrections merged</strong> back into the dataset after checking against sources.</li>
     </ol>
 
-    <p class="note" style="margin-top:28px;"><strong>The schema is the control.</strong> Each record must supply
+    <p class="note" style="margin-top:28px;">Each record must supply
       <span class="ident">auth_method</span>, <span class="ident">self_serve</span>,
       <span class="ident">api_surface</span>, <span class="ident">mcp_exists</span>,
       <span class="ident">buildability_verdict</span>, <span class="ident">evidence</span>, and
-      <span class="ident">confidence</span>. Constraining the output shape limits what a worker is able to
-      claim, and makes an unsupported claim visible rather than fluent.</p>
+      <span class="ident">confidence</span>. The prompt requires a source URL for every claim; output that
+      doesn't parse as valid JSON against these keys is retried once, then recorded as a parse error.</p>
 
     <h2 style="margin-top:44px;">Run it yourself</h2>
     <p class="intro prose">The pipeline runs against any app list. These are the actual commands, from the
@@ -1413,9 +1409,8 @@ python agent/verify.py --input data/results.json --sample 20 --output data/verif
         </tbody>
       </table>
     </div>
-    <p class="note" style="margin-top:24px;">These are not failures of the research process. They are cases
-      where public web evidence was insufficient to establish a reliable answer. Confirming them requires
-      account access, direct outreach, or a gated developer portal.</p>
+    <p class="note" style="margin-top:24px;">Public web evidence wasn't enough to establish a reliable answer
+      for these six. Confirming them needs account access, direct outreach, or a gated developer portal.</p>
   </div>
 </section>
 
@@ -1428,10 +1423,11 @@ python agent/verify.py --input data/results.json --sample 20 --output data/verif
       <li><a href="https://github.com/NITISH-R-G/composio-app-research/blob/master/data/verification.json" target="_blank" rel="noopener">Verification log</a></li>
       <li><a href="https://github.com/NITISH-R-G/composio-app-research/blob/master/agent/research.py" target="_blank" rel="noopener">Research agent source</a></li>
     </ul>
-    <p class="colophon">Research executed as ten parallel Claude Code subagents running web search against live
-      developer documentation, then independently re-researched by an eleventh agent on an 18-app sample. The
-      reusable pipeline is structured LLM research plus web search under a fixed schema with cited evidence; a
-      Composio API key is optional and used only to check apps against Composio's existing toolkit registry.</p>
+    <p class="colophon"><span class="ident">agent/research.py</span> implements the Anthropic
+      <span class="ident">web_search</span> path described above. This run used ten parallel Claude Code
+      subagents against the same schema instead, with an eleventh agent doing the independent re-research on
+      18 apps. A Composio API key is optional and only used to check apps against Composio's existing toolkit
+      registry.</p>
   </div>
 </footer>
 
